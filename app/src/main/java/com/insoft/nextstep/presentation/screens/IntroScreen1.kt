@@ -8,13 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -38,15 +41,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.insoft.nextstep.R
-import com.insoft.nextstep.presentation.navigation.Routes
+import com.insoft.nextstep.presentation.components.PageIndicator
+import com.insoft.nextstep.presentation.navigation.Screen
+import com.insoft.nextstep.ui.theme.StatusBarColor
 
 @Composable
 fun IntroScreen1(modifier: Modifier = Modifier, navController: NavHostController) {
+StatusBarColor(Color.Blue)
     Box(modifier = Modifier.fillMaxSize().background(
         brush = Brush.verticalGradient(
             colors = listOf(
                 Color.White,
-                colorResource(R.color.green_gradient_color)  // Blue shade
+                colorResource(R.color.green_gradient_color)
             )
         )
     )) {
@@ -90,23 +96,14 @@ fun IntroScreen1(modifier: Modifier = Modifier, navController: NavHostController
                 Spacer(Modifier.height(50.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp),
                     Arrangement.SpaceBetween,
                     Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "-------",
-                        modifier = modifier.padding(16.dp),
-                        textAlign = TextAlign.Start,
-                        style = TextStyle(
-                            fontSize = 28.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
+                    PageIndicator(3,0)
                     CircularIconsRow(
                         onBackClick = {  },
-                        onForwardClick = { navController.navigate(Routes.intro2) }
+                        onForwardClick = { navController.navigate(Screen.intro2.route) }
                     )
                 }
                 Spacer(Modifier.height(50.dp))

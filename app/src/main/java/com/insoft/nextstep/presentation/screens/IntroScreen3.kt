@@ -30,7 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.insoft.nextstep.R
-import com.insoft.nextstep.presentation.navigation.Routes
+import com.insoft.nextstep.presentation.components.PageIndicator
+import com.insoft.nextstep.presentation.navigation.Screen
 
 @Composable
 fun IntroScreen3(modifier: Modifier = Modifier, navController: NavHostController) {
@@ -86,25 +87,17 @@ fun IntroScreen3(modifier: Modifier = Modifier, navController: NavHostController
             Spacer(Modifier.height(50.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp),
                 Arrangement.SpaceBetween,
                 Alignment.CenterVertically
             ) {
-                Text(
-                    text = "-------",
-                    modifier = modifier.padding(16.dp),
-                    textAlign = TextAlign.Start,
-                    style = TextStyle(
-                        fontSize = 28.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
+                PageIndicator(3,2)
+
                 CircularIconsRow(
                     onBackClick = { navController.navigateUp() },
                     onForwardClick = {
-                        navController.navigate(Routes.signup) {
-                            popUpTo(Routes.intro1) { inclusive = true }
+                        navController.navigate(Screen.signup.route) {
+                            popUpTo(Screen.intro3.route) { inclusive = true }
                         }
                     }
                 )
