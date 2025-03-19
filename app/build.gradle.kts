@@ -66,6 +66,7 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor) // Latest version as of now
 
     // Hilt
     implementation(libs.hilt.android)

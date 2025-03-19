@@ -1,12 +1,16 @@
 package com.insoft.nextstep.di
 
 import com.insoft.nextstep.data.remote.ApiService
+import com.insoft.nextstep.data.repository.AuthRepositoryImpl
 import com.insoft.nextstep.data.repository.JobRepositoryImp
+import com.insoft.nextstep.domain.repository.AuthRepository
 import com.insoft.nextstep.domain.repository.JobRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -14,12 +18,30 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 object AppModule {
+
     @Provides
     @Singleton
-    fun provideApiService(): ApiService {
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY // Logs request and response bodies
+        }
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor) // Attach logging interceptor
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiService(okHttpClient: OkHttpClient): ApiService {
        return Retrofit.Builder()
-            .baseUrl("https://next-step-backend.vercel.app/api/")
+            .baseUrl("https://next-step-backend.vercel.app/")
             .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient) // Attach OkHttpClient with logging
             .build()
             .create(ApiService::class.java)
     }
@@ -28,5 +50,10 @@ object AppModule {
     @Singleton
     fun provideJobRepository(apiService: ApiService): JobRepository {
         return JobRepositoryImp(apiService)
+    }
+    @Provides
+    @Singleton
+    fun provideAuthRepository(apiService: ApiService): AuthRepository {
+        return AuthRepositoryImpl(apiService)
     }
 }

@@ -1,5 +1,6 @@
 package com.insoft.nextstep.presentation.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -12,7 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,6 +29,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.insoft.nextstep.R
@@ -31,9 +40,16 @@ import com.insoft.nextstep.presentation.components.HeadingText
 import com.insoft.nextstep.presentation.components.InputBox
 import com.insoft.nextstep.presentation.components.PasswordInputBox
 import com.insoft.nextstep.presentation.navigation.Screen
+import com.insoft.nextstep.presentation.viewmodels.AuthViewModel
 
 @Composable
-fun SignUpScreen(navController: NavHostController) {
+fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hiltViewModel()) {
+    val signupState by viewModel.signupState.collectAsState()
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Box(
         modifier = Modifier
@@ -70,22 +86,30 @@ fun SignUpScreen(navController: NavHostController) {
                     InputBox(
                         "First Name",
                         Modifier,
-                        painterResource(id = R.drawable.baseline_person_24)
+                        painterResource(id = R.drawable.baseline_person_24),
+                        value = firstName,
+                        onValueChange = { firstName = it }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     InputBox(
                         "Last Name",
-                        painterResource = painterResource(id = R.drawable.baseline_person_24)
+                        painterResource = painterResource(id = R.drawable.baseline_person_24),
+                        value = lastName,
+                        onValueChange = { lastName = it }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     InputBox(
                         "Email",
-                        painterResource = painterResource(id = R.drawable.baseline_email_24)
+                        painterResource = painterResource(id = R.drawable.baseline_email_24),
+                        value = email,
+                        onValueChange = { email = it }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     PasswordInputBox(
                         "Password",
-                        painterResource = painterResource(id = R.drawable.baseline_lock_24)
+                        painterResource = painterResource(id = R.drawable.baseline_lock_24),
+                        value = password,
+                        onValueChange = { password = it }
                     )
 //            Spacer(modifier = Modifier.height(5.dp))
 
@@ -96,13 +120,19 @@ fun SignUpScreen(navController: NavHostController) {
 //                    .padding(bottom = 16.dp)
 //            )
                     Spacer(modifier = Modifier.height(30.dp))
-
-                    ButtonComponent(
-                        text = "Sign Up",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { navController.navigate(Screen.Home.route) }
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally)   )
+                    } else {
+                        ButtonComponent(
+                            text = "Sign Up",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                        viewModel.signup("$firstName $lastName", email, password)
+                                        Log.d("SignUpScreen", "success")
+                                }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(20.dp))
 
                     DividerTextComponent(Modifier)
@@ -117,6 +147,14 @@ fun SignUpScreen(navController: NavHostController) {
             }
         }
     }
+    LaunchedEffect(signupState) {
+        signupState?.let {
+            navController.navigate(Screen.Home.route){
+                popUpTo(Screen.signup.route) { inclusive = true }  // Clears backstack
+            }
+        }
+    }
+
 
 }
 

@@ -114,11 +114,12 @@ fun HeadingText(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun InputBox(label: String, modifier: Modifier = Modifier, painterResource: Painter) {
+fun InputBox(label: String, modifier: Modifier = Modifier, painterResource: Painter,  value: String,
+             onValueChange: (String) -> Unit ) {
     val txt = remember { mutableStateOf("") }
 
     OutlinedTextField(
-        value = txt.value,
+        value = value,
         label = {
             Text(
                 text = label,
@@ -129,7 +130,7 @@ fun InputBox(label: String, modifier: Modifier = Modifier, painterResource: Pain
         },
         textStyle = TextStyle(fontSize = 16.sp),
         keyboardOptions = KeyboardOptions.Default,
-        onValueChange = { txt.value = it },
+        onValueChange = { onValueChange(it) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         leadingIcon = {
@@ -146,13 +147,14 @@ fun InputBox(label: String, modifier: Modifier = Modifier, painterResource: Pain
 }
 
 @Composable
-fun PasswordInputBox(label: String, modifier: Modifier = Modifier, painterResource: Painter) {
+fun PasswordInputBox(label: String, modifier: Modifier = Modifier, painterResource: Painter,  value: String,
+                     onValueChange: (String) -> Unit ) {
     val password = remember { mutableStateOf("") }
     val isVisible = remember { mutableStateOf(false) }
 
     OutlinedTextField(
-        value = password.value,
-        onValueChange = { password.value = it },
+        value = value,
+        onValueChange = { onValueChange(it)},
         modifier = modifier.fillMaxWidth(),
         label = {
             Text(
