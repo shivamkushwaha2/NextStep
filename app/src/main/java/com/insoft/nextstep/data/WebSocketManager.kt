@@ -3,27 +3,101 @@ package com.insoft.nextstep.data
 import okhttp3.*
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
+import io.socket.client.IO
+import io.socket.client.Socket
+import kotlinx.coroutines.flow.MutableStateFlow
+import java.net.URISyntaxException
 
 object WebSocketManager {
-    private var webSocket: WebSocket? = null
-    private val client = OkHttpClient.Builder()
-        .pingInterval(30, TimeUnit.SECONDS)
-        .build()
+    private var socket: Socket? = null
+    private val _likesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val likesFlow = _likesFlow
 
-    private var listener: WebSocketListener? = null
+    private val _commentsFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val commentsFlow = _commentsFlow
 
-    fun connectWebSocket(url: String, webSocketListener: WebSocketListener) {
-        listener = webSocketListener
-        val request = Request.Builder().url(url).build()
-        webSocket = client.newWebSocket(request, webSocketListener)
+    fun connectWebSocket() {
+        try {
+            socket = IO.socket("https://nextstepbackend.onrender.com") //  Use only base URL
+            socket?.connect()
+
+            socket?.on(Socket.EVENT_CONNECT) {
+                println("WebSocket Connected")
+            }
+
+            socket?.on(Socket.EVENT_DISCONNECT) {
+                println(" WebSocket Disconnected")
+            }
+
+            socket?.on("likeUpdate") { args ->
+                if (args.isNotEmpty()) {
+                    println("👍 Like Update: ${args[0]}")
+                    val json = args[0] as JSONObject
+                    val videoId = json.getString("videoId")
+                    val likesCount = json.getInt("likes")
+
+                    _likesFlow.value = _likesFlow.value.toMutableMap().apply {
+                        this[videoId] = likesCount
+                    }
+                }
+            }
+
+            socket?.on("commentUpdate") { args ->
+                if (args.isNotEmpty()) {
+
+                }
+            }
+
+        } catch (e: URISyntaxException) {
+            e.printStackTrace()
+        }
     }
 
-    fun sendMessage(message: String) {
-        webSocket?.send(message)
+    fun sendLike(videoId: String, userId: String, isLike: Boolean) {
+        val likeEvent = JSONObject().apply {
+            put("videoId", videoId)
+            put("userId", userId)
+            put("isLike", isLike)
+        }
+        socket?.emit("likeEvent", likeEvent) //Correct Socket.IO format
+    }
+
+    fun sendComment(videoId: String, userId: String, commentText: String) {
+        val commentEvent = JSONObject().apply {
+            put("videoId", videoId)
+            put("userId", userId)
+            put("comment", commentText)
+        }
+        socket?.emit("commentEvent", commentEvent) // correct Socket.IO format
     }
 
     fun closeWebSocket() {
-        webSocket?.close(1000, "User closed connection")
-        webSocket = null
+        socket?.disconnect()
+        socket = null
     }
 }
+
+
+//object WebSocketManager {
+//    private var webSocket: WebSocket? = null
+//    private val client = OkHttpClient.Builder()
+//        .pingInterval(30, TimeUnit.SECONDS)
+//        .build()
+//
+//    private var listener: WebSocketListener? = null
+//
+//    fun connectWebSocket(url: String, webSocketListener: WebSocketListener) {
+//        listener = webSocketListener
+//        val request = Request.Builder().url(url).build()
+//        webSocket = client.newWebSocket(request, webSocketListener)
+//    }
+//
+//    fun sendMessage(message: String) {
+//        webSocket?.send(message)
+//    }
+//
+//    fun closeWebSocket() {
+//        webSocket?.close(1000, "User closed connection")
+//        webSocket = null
+//    }
+//}

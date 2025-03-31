@@ -76,7 +76,6 @@ import kotlinx.coroutines.withContext
 fun VideoScreen(
     navController: NavController,
     modifier: Modifier,
-    videoId: String,
     userId: String,
     viewModel: WebSocketViewModel = viewModel(),
     videoViewModel: VideoViewModel = hiltViewModel()
@@ -92,7 +91,6 @@ fun VideoScreen(
             viewModel = viewModel,
             videoViewModel = videoViewModel,
             modifier = Modifier.padding(paddingValues),
-            videoId = videoId,
             userId = userId,
             navController = navController,
         )
@@ -103,7 +101,6 @@ fun ScreenContent(
     viewModel: WebSocketViewModel,
     videoViewModel: VideoViewModel,
     modifier: Modifier = Modifier,
-    videoId: String,
     userId: String,
     navController: NavController
 ) {
@@ -151,7 +148,6 @@ fun ScreenContent(
                     video = videos[page],
                     userId = userId,
                     viewModel = viewModel,
-                    isLiked = videos[page].likes.contains(userId),
                     likes = likes,
                     modifier = Modifier.fillMaxSize(),
                     navController = navController
@@ -166,11 +162,13 @@ private fun VideoOverlayUI(
     video: VideoModel,
     userId: String,
     viewModel: WebSocketViewModel,
-    isLiked: Boolean,
     likes: Map<String, Int>,
     modifier: Modifier = Modifier,
     navController: NavController
 ) {
+    var isLiked by remember { mutableStateOf(video.likes.contains(userId)) }
+    val likeCount = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
+
     Box(modifier = modifier)
     {
         // Right side action buttons
@@ -183,21 +181,22 @@ private fun VideoOverlayUI(
         {
             IconButton(
                 onClick = {
-                   viewModel.sendLike(videoId = video._id, userId, true)
-//                    viewModel.sendLike(videoId, userId, true)
+                    isLiked = !isLiked  // Toggle like state
+                    viewModel.sendLike(videoId = video._id, userId, isLiked)
                 },
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.ThumbUpOffAlt,
                     contentDescription = "Like",
-                    tint = if (isLiked) Color.Blue else Color.White,
+                    tint = if (isLiked) Color.Blue else Color.White, // Change color based on state
                     modifier = Modifier.size(32.dp)
                 )
             }
+//            val like = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
             Text(
-                text = likes[video._id]?.toString() ?: "0",
-                color = Color.White,
+                text = likeCount,
+                color = Color.Black,
                 style = MaterialTheme.typography.bodySmall
             )
 
@@ -360,7 +359,6 @@ private fun ScreenContentPreview() {
         NavController(LocalContext.current),
         Modifier,
         "videoId" ,
-        "userId" ,
     )
 }
 

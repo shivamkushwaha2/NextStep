@@ -70,7 +70,7 @@ fun MyApp(modifier: Modifier = Modifier) {
                     HomeScreen(navController = navController)
                 }
                 composable(Screen.Videos.route) {
-                    VideoScreen(navController = navController,Modifier, "123", "65a2bcdef1e2d34a2f89c789")
+                    VideoScreen(navController = navController,Modifier, "65a2bcdef1e2d34a2f89c789")
                 }
                 composable(Screen.Projects.route) {
                     ProjectsScreen(navController = navController)

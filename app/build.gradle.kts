@@ -78,5 +78,6 @@ dependencies {
     implementation ("androidx.media3:media3-exoplayer:1.6.0")
     implementation ("androidx.media3:media3-ui:1.6.0")
 
+    implementation("io.socket:socket.io-client:2.1.0")
 
 }
