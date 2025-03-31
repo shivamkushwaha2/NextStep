@@ -3,8 +3,10 @@ package com.insoft.nextstep.di
 import com.insoft.nextstep.data.remote.ApiService
 import com.insoft.nextstep.data.repository.AuthRepositoryImpl
 import com.insoft.nextstep.data.repository.JobRepositoryImp
+import com.insoft.nextstep.data.repository.VideoRepositoryImpl
 import com.insoft.nextstep.domain.repository.AuthRepository
 import com.insoft.nextstep.domain.repository.JobRepository
+import com.insoft.nextstep.domain.repository.VideoRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,7 +41,7 @@ object AppModule {
     @Singleton
     fun provideApiService(okHttpClient: OkHttpClient): ApiService {
        return Retrofit.Builder()
-            .baseUrl("https://next-step-backend.vercel.app/")
+            .baseUrl("https://nextstepbackend.onrender.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient) // Attach OkHttpClient with logging
             .build()
@@ -55,5 +57,11 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(apiService: ApiService): AuthRepository {
         return AuthRepositoryImpl(apiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVideoRepository(apiService: ApiService): VideoRepository {
+        return VideoRepositoryImpl(apiService)
     }
 }

@@ -22,12 +22,13 @@ sealed class Screen(
 
     object login : Screen("login_screen")
     object signup : Screen("Signup_screen")
+    object UploadVideo : Screen("uploadVideo")
 
 
     object Home : Screen("home", "Home", R.drawable.home, R.drawable.homeselected)
     object Jobs : Screen("jobs", "Jobs", R.drawable.job, R.drawable.jobselected)
     object Projects : Screen("projects", "Projects", R.drawable.project, R.drawable.projectselected)
     object Chat : Screen("chat", "Chat", R.drawable.chat, R.drawable.chatselected)
-    object Profile : Screen("profile", "Profile", R.drawable.baseline_person_24, R.drawable.profile)
+    object Videos : Screen("videos", "Shorts", R.drawable.playicon_w, R.drawable.playicon)
 
 }

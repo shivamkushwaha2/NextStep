@@ -19,6 +19,8 @@ import com.insoft.nextstep.presentation.screens.SignUpScreen
 import com.insoft.nextstep.presentation.screens.HomeScreen
 import com.insoft.nextstep.presentation.screens.JobScreen
 import com.insoft.nextstep.presentation.screens.ProjectsScreen
+import com.insoft.nextstep.presentation.screens.UploadVideo
+import com.insoft.nextstep.presentation.screens.VideoScreen
 
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
@@ -43,7 +45,7 @@ fun MyApp(modifier: Modifier = Modifier) {
 //        ) { paddingValues ->
             NavHost(
                 navController = navController,
-                startDestination = Screen.intro1.route,
+                startDestination = Screen.Home.route,
 //                modifier = Modifier.padding(paddingValues)
             ) {
                 composable(Screen.intro1.route) {
@@ -67,8 +69,14 @@ fun MyApp(modifier: Modifier = Modifier) {
                 composable(Screen.Home.route) {
                     HomeScreen(navController = navController)
                 }
+                composable(Screen.Videos.route) {
+                    VideoScreen(navController = navController,Modifier, "123", "65a2bcdef1e2d34a2f89c789")
+                }
                 composable(Screen.Projects.route) {
                     ProjectsScreen(navController = navController)
+                }
+                composable(Screen.UploadVideo.route) {
+                    UploadVideo(navController = navController)
                 }
             }
 //        }

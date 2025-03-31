@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.insoft.nextstep.R
 import com.insoft.nextstep.data.model.JobModel
 import com.insoft.nextstep.presentation.navigation.Screen
@@ -353,10 +354,11 @@ fun ClickableSignUpTextComponent(navController: NavHostController?) {
 fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
         Screen.Home,
+        Screen.Videos,
         Screen.Jobs,
         Screen.Projects,
-        Screen.Chat,
-        Screen.Profile
+        Screen.Chat
+
     )
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
@@ -801,9 +803,9 @@ fun PageIndicator(pagesize: Int, currentpage: Int) {
 @Composable
 private fun default() {
     Surface(Modifier.windowInsetsPadding(WindowInsets.statusBars)) {
-        PageIndicator(3, 2)
+ //       PageIndicator(3, 2)
 //        ProjectItem(Modifier, R.drawable.project_img)
-//        BottomNavigationBar(navController = rememberNavController())
+       BottomNavigationBar(navController = rememberNavController())
 //        PostItem(Modifier)
 //        ClickableLoginTextComponent(rememberNavController())
 //        DividerTextComponent(Modifier)

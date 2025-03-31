@@ -75,4 +75,8 @@ dependencies {
 
     implementation("androidx.browser:browser:1.8.0")
 
+    implementation ("androidx.media3:media3-exoplayer:1.6.0")
+    implementation ("androidx.media3:media3-ui:1.6.0")
+
+
 }
