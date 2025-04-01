@@ -17,6 +17,10 @@ object WebSocketManager {
     private val _commentsFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
     val commentsFlow: StateFlow<Map<String, Int>> = _commentsFlow
 
+
+    private val _sharesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())  // ✅ New Flow for Shares
+    val sharesFlow: StateFlow<Map<String, Int>> = _sharesFlow
+
     fun connectWebSocket() {
         try {
             socket = IO.socket("https://nextstepbackend.onrender.com") //  Use only base URL
@@ -55,6 +59,18 @@ object WebSocketManager {
 
                 }
             }
+            socket?.on("shareUpdate") { args ->
+                if (args.isNotEmpty()) {
+                    val json = args[0] as JSONObject
+                    val videoId = json.getString("videoId")
+                    val sharesCount = json.getInt("shares")
+
+                    _sharesFlow.value = _sharesFlow.value.toMutableMap().apply {
+                        this[videoId] = sharesCount
+                    }
+                    println("🔗 Share Update Received: $videoId -> $sharesCount shares")
+                }
+            }
 
         } catch (e: URISyntaxException) {
             e.printStackTrace()
@@ -77,6 +93,13 @@ object WebSocketManager {
             put("comment", commentText)
         }
         socket?.emit("commentEvent", commentEvent) // correct Socket.IO format
+    }
+    fun sendShare(videoId: String, userId: String) {
+        val shareEvent = JSONObject().apply {
+            put("videoId", videoId)
+            put("userId", userId)
+        }
+        socket?.emit("shareEvent", shareEvent)
     }
 
     fun closeWebSocket() {

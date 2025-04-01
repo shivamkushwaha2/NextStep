@@ -172,11 +172,12 @@ private fun VideoOverlayUI(
 ) {
     var isLiked by remember { mutableStateOf(video.likes.contains(userId)) }
     val likeCount = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
+    val shares by viewModel.sharesFlow.collectAsState()
+    val shareCount = if(shares[video._id] !=null ) shares[video._id].toString() else video.shares.size.toString()
 
-//    val commentCount by remember { derivedStateOf { comments[video._id]?.toString() ?: video.comments.size.toString() } }
     val commentCount by rememberUpdatedState(comments[video._id]?.toString() ?: video.comments.size.toString())
     var showCommentSheet by remember { mutableStateOf(false) }
-    println("comment count $commentCount "+ comments[video._id])
+
 
     Box(modifier = modifier)
     {
@@ -231,7 +232,7 @@ private fun VideoOverlayUI(
             Spacer(modifier = Modifier.height(16.dp))
 
             IconButton(
-                onClick = { /* Handle share */ },
+                onClick = { viewModel.sendShare(videoId = video._id, userId)},
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
@@ -242,7 +243,7 @@ private fun VideoOverlayUI(
                 )
             }
             Text(
-                text = "100",
+                text = shareCount.toString(),
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall
             )
