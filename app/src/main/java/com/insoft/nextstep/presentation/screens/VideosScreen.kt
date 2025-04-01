@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,17 +37,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -67,9 +65,7 @@ import androidx.navigation.NavController
 import com.insoft.nextstep.data.model.VideoModel
 import com.insoft.nextstep.presentation.components.BottomNavigationBar
 import com.insoft.nextstep.presentation.viewmodels.VideoViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,9 +101,15 @@ fun ScreenContent(
     navController: NavController
 ) {
     val likes by viewModel.likesFlow.collectAsState()
+    val comments by viewModel.commentsFlow.collectAsState()
+
+    LaunchedEffect(comments) {
+        println("UI Updated Comments Data: $comments")  // ✅ Debugging
+    }
     val videos by videoViewModel.videos.collectAsState()
     val context = LocalContext.current
 
+    println("comments $comments")
     // Ensure Pager State is properly initialized
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -149,6 +151,7 @@ fun ScreenContent(
                     userId = userId,
                     viewModel = viewModel,
                     likes = likes,
+                    comments = comments,
                     modifier = Modifier.fillMaxSize(),
                     navController = navController
                 )
@@ -163,11 +166,17 @@ private fun VideoOverlayUI(
     userId: String,
     viewModel: WebSocketViewModel,
     likes: Map<String, Int>,
+    comments: Map<String, Int>,
     modifier: Modifier = Modifier,
     navController: NavController
 ) {
     var isLiked by remember { mutableStateOf(video.likes.contains(userId)) }
     val likeCount = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
+
+//    val commentCount by remember { derivedStateOf { comments[video._id]?.toString() ?: video.comments.size.toString() } }
+    val commentCount by rememberUpdatedState(comments[video._id]?.toString() ?: video.comments.size.toString())
+    var showCommentSheet by remember { mutableStateOf(false) }
+    println("comment count $commentCount "+ comments[video._id])
 
     Box(modifier = modifier)
     {
@@ -203,7 +212,7 @@ private fun VideoOverlayUI(
             Spacer(modifier = Modifier.height(16.dp))
 
             IconButton(
-                onClick = { viewModel.sendComment(video._id, userId, "Nice Video") },
+                onClick = { showCommentSheet = true }, // ✅ Open BottomSheet
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
@@ -214,7 +223,7 @@ private fun VideoOverlayUI(
                 )
             }
             Text(
-                text = "100",
+                text = commentCount,
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -260,7 +269,17 @@ private fun VideoOverlayUI(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-
+        if (showCommentSheet) {
+            CommentBottomSheet(
+                videoId = video._id,
+                comments = video.comments, // ✅ Pass comments
+                onCommentPost = { commentText ->
+                    viewModel.sendComment(video._id, userId, commentText)
+                    showCommentSheet = false
+                },
+                onDismiss = { showCommentSheet = false }
+            )
+        }
         // Bottom info and description
         Column(
             modifier = Modifier

@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.net.URISyntaxException
 
 object WebSocketManager {
@@ -14,7 +15,7 @@ object WebSocketManager {
     val likesFlow = _likesFlow
 
     private val _commentsFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val commentsFlow = _commentsFlow
+    val commentsFlow: StateFlow<Map<String, Int>> = _commentsFlow
 
     fun connectWebSocket() {
         try {
@@ -41,9 +42,16 @@ object WebSocketManager {
                     }
                 }
             }
-
             socket?.on("commentUpdate") { args ->
                 if (args.isNotEmpty()) {
+                    println("👍 comment Update Received: ${args[0]}")
+                    val json = args[0] as JSONObject
+                    val videoId = json.getString("videoId")
+                    val commentsCount = json.getInt("comments")
+
+                    _commentsFlow.value = _commentsFlow.value.toMutableMap().apply {
+                        this[videoId] = commentsCount
+                    }
 
                 }
             }
@@ -76,28 +84,3 @@ object WebSocketManager {
         socket = null
     }
 }
-
-
-//object WebSocketManager {
-//    private var webSocket: WebSocket? = null
-//    private val client = OkHttpClient.Builder()
-//        .pingInterval(30, TimeUnit.SECONDS)
-//        .build()
-//
-//    private var listener: WebSocketListener? = null
-//
-//    fun connectWebSocket(url: String, webSocketListener: WebSocketListener) {
-//        listener = webSocketListener
-//        val request = Request.Builder().url(url).build()
-//        webSocket = client.newWebSocket(request, webSocketListener)
-//    }
-//
-//    fun sendMessage(message: String) {
-//        webSocket?.send(message)
-//    }
-//
-//    fun closeWebSocket() {
-//        webSocket?.close(1000, "User closed connection")
-//        webSocket = null
-//    }
-//}
