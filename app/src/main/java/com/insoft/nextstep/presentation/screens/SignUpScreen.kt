@@ -1,5 +1,6 @@
 package com.insoft.nextstep.presentation.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,7 +52,7 @@ fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hi
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val isLoading by viewModel.isLoading.collectAsState()
-
+    val context = LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -147,10 +149,12 @@ fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hi
             }
         }
     }
+
     LaunchedEffect(signupState) {
-        signupState?.let {
-            navController.navigate(Screen.Home.route){
-                popUpTo(Screen.signup.route) { inclusive = true }  // Clears backstack
+        signupState?.let { user ->
+            saveUserData(context, email, user.token, user.user.name,user.user._id)
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.signup.route) { inclusive = true }
             }
         }
     }
@@ -158,6 +162,16 @@ fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hi
 
 }
 
+private fun saveUserData(context: Context, email: String, token: String,name:String,id:String) {
+    val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
+    sharedPreferences.edit().apply {
+        putString("USER_EMAIL", email)
+        putString("USER_TOKEN", token)
+        putString("USER_ID", id)
+        putString("USER_NAME", name)
+        apply()
+    }
+}
 @Preview(showBackground = true)
 @Composable
 private fun SignUpPreview() {

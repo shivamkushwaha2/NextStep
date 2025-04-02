@@ -3,7 +3,7 @@ package com.insoft.nextstep.presentation.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.insoft.nextstep.data.model.LoginRequest
-import com.insoft.nextstep.data.model.LoginResponse
+import com.insoft.nextstep.data.model.UserModel
 import com.insoft.nextstep.domain.usecase.LoginUseCase
 import com.insoft.nextstep.domain.usecase.SignUpUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,11 +17,11 @@ class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val signupUseCase: SignUpUseCase
 ): ViewModel() {
-    private val _loginState = MutableStateFlow<LoginResponse?>(null)
-    val loginState: StateFlow<LoginResponse?> = _loginState
+    private val _loginState = MutableStateFlow<UserModel?>(null)
+    val loginState: StateFlow<UserModel?> = _loginState
 
-    private val _signupState = MutableStateFlow<LoginResponse?>(null)
-    val signupState: StateFlow<LoginResponse?> = _signupState
+    private val _signupState = MutableStateFlow<UserModel?>(null)
+    val signupState: StateFlow<UserModel?> = _signupState
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading

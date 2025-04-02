@@ -7,5 +7,6 @@ data class VideoModel(
     val likes: List<String>,
     val comments: List<Comment>,
     val shares: List<String>,
-    val createdAt: String
-)
+    val createdAt: String,
+    val description: String
+    )

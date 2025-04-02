@@ -18,10 +18,13 @@ class UploadVideoViewModel @Inject constructor(
     private val _uploadSuccess = MutableStateFlow<Boolean?>(null)
     val uploadSuccess: StateFlow<Boolean?> = _uploadSuccess
 
-    fun uploadVideo(videoFile: File, userId: String) {
+    fun uploadVideo(videoFile: File, userId: String, description: String?) {
         viewModelScope.launch {
-            val result = uploadVideoUseCase(videoFile, userId)
+            val result = uploadVideoUseCase(videoFile, userId,description.toString())
             _uploadSuccess.value = result
         }
+    }
+    fun resetUploadState() {
+        _uploadSuccess.value = null
     }
 }

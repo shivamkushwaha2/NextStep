@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.AddToPhotos
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ThumbUpOffAlt
@@ -30,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults.contentWindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -63,6 +66,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import com.insoft.nextstep.data.model.VideoModel
+import com.insoft.nextstep.data.model.VideoResponse
 import com.insoft.nextstep.presentation.components.BottomNavigationBar
 import com.insoft.nextstep.presentation.viewmodels.VideoViewModel
 import kotlinx.coroutines.delay
@@ -72,26 +76,35 @@ import kotlinx.coroutines.delay
 fun VideoScreen(
     navController: NavController,
     modifier: Modifier,
-    userId: String,
     viewModel: WebSocketViewModel = viewModel(),
     videoViewModel: VideoViewModel = hiltViewModel()
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(state = rememberTopAppBarState())
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
+    val userId = sharedPreferences.getString("USER_ID", "") ?: ""
+
+    val scrollBehavior =
+        TopAppBarDefaults.enterAlwaysScrollBehavior(state = rememberTopAppBarState())
 
     Scaffold(
         modifier = modifier
             .windowInsetsPadding(WindowInsets.statusBars),
+        contentWindowInsets = WindowInsets(0.dp),
         bottomBar = { BottomNavigationBar(navController) }
     ) { paddingValues ->
         ScreenContent(
             viewModel = viewModel,
             videoViewModel = videoViewModel,
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .background(color = Color.White),
             userId = userId,
             navController = navController,
         )
     }
 }
+
 @Composable
 fun ScreenContent(
     viewModel: WebSocketViewModel,
@@ -162,7 +175,7 @@ fun ScreenContent(
 
 @Composable
 private fun VideoOverlayUI(
-    video: VideoModel,
+    video: VideoResponse,
     userId: String,
     viewModel: WebSocketViewModel,
     likes: Map<String, Int>,
@@ -171,164 +184,182 @@ private fun VideoOverlayUI(
     navController: NavController
 ) {
     var isLiked by remember { mutableStateOf(video.likes.contains(userId)) }
-    val likeCount = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
+    val likeCount =
+        if (likes[video._id] != null) likes[video._id].toString() else video.likes.size.toString()
     val shares by viewModel.sharesFlow.collectAsState()
-    val shareCount = if(shares[video._id] !=null ) shares[video._id].toString() else video.shares.size.toString()
+    val shareCount =
+        if (shares[video._id] != null) shares[video._id].toString() else video.shares.size.toString()
 
-    val commentCount by rememberUpdatedState(comments[video._id]?.toString() ?: video.comments.size.toString())
+    val commentCount by rememberUpdatedState(
+        comments[video._id]?.toString() ?: video.comments.size.toString()
+    )
     var showCommentSheet by remember { mutableStateOf(false) }
 
 
     Box(modifier = modifier)
     {
-        // Right side action buttons
-        Column(
+        IconButton(
+            onClick = {
+                navController.navigate("uploadVideo")
+            },
             modifier = Modifier
-                .padding(end = 16.dp)
-                .align(Alignment.BottomEnd),
-            horizontalAlignment = Alignment.CenterHorizontally
-        )
-        {
-            IconButton(
-                onClick = {
-                    isLiked = !isLiked  // Toggle like state
-                    viewModel.sendLike(videoId = video._id, userId, isLiked)
-                },
-                modifier = Modifier.size(48.dp)
-            ) {
+                .size(72.dp)
+                .align(Alignment.TopEnd)
+                .padding(top = 16.dp, end = 12.dp)
+        ) {
+            Column {
                 Icon(
-                    imageVector = Icons.Default.ThumbUpOffAlt,
-                    contentDescription = "Like",
-                    tint = if (isLiked) Color.Blue else Color.White, // Change color based on state
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-//            val like = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
-            Text(
-                text = likeCount,
-                color = Color.Black,
-                style = MaterialTheme.typography.bodySmall
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            IconButton(
-                onClick = { showCommentSheet = true }, // ✅ Open BottomSheet
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ChatBubbleOutline,
-                    contentDescription = "Comment",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-            Text(
-                text = commentCount,
-                color = Color.White,
-                style = MaterialTheme.typography.bodySmall
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            IconButton(
-                onClick = { viewModel.sendShare(videoId = video._id, userId)},
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = "Share",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-            Text(
-                text = shareCount.toString(),
-                color = Color.White,
-                style = MaterialTheme.typography.bodySmall
-            )
-
-
-            IconButton(
-                onClick = {
-                    navController.navigate("uploadVideo")
-                },
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AddCircleOutline,
+                    imageVector = Icons.Default.AddToPhotos,
                     contentDescription = "Create",
                     tint = Color.White,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+                Text(
+                    text = "Create",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
-            Text(
-                text = "Create",
-                color = Color.White,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        if (showCommentSheet) {
-            CommentBottomSheet(
-                videoId = video._id,
-                comments = video.comments, // ✅ Pass comments
-                onCommentPost = { commentText ->
-                    viewModel.sendComment(video._id, userId, commentText)
-                    showCommentSheet = false
-                },
-                onDismiss = { showCommentSheet = false }
-            )
         }
-        // Bottom info and description
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp)
-        )
-        {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.profile),
-                    contentDescription = "Profile",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "username",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .background(Color.Blue, shape = RoundedCornerShape(16.dp))
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { /* Handle follow */ }
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+
+        Column(Modifier.align(Alignment.BottomCenter)) {
+            // Right side action buttons
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 8.dp),
+                horizontalAlignment = Alignment.End
+            )
+            {
+                IconButton(
+                    onClick = {
+                        isLiked = !isLiked  // Toggle like state
+                        viewModel.sendLike(videoId = video._id, userId, isLiked)
+                    },
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Text(
-                        text = "Follow",
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall
+                    Icon(
+                        imageVector = Icons.Default.ThumbUpOffAlt,
+                        contentDescription = "Like",
+                        tint = if (isLiked) Color.Blue else Color.White, // Change color based on state
+                        modifier = Modifier.size(32.dp)
                     )
                 }
+//            val like = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
+                Text(
+                    text = likeCount,
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                IconButton(
+                    onClick = { showCommentSheet = true }, // ✅ Open BottomSheet
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChatBubbleOutline,
+                        contentDescription = "Comment",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                Text(
+                    text = commentCount,
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(end = 16.dp)
+
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                IconButton(
+                    onClick = { viewModel.sendShare(videoId = video._id, userId) },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                Text(
+                    text = shareCount.toString(),
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+
             }
-            Text(
-                text = "description description description description description description description description",
-                color = Color.White,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+            if (showCommentSheet) {
+                CommentBottomSheet(
+                    videoId = video._id,
+                    comments = video.comments, // ✅ Pass comments
+                    onCommentPost = { commentText ->
+                        viewModel.sendComment(video._id, userId, commentText)
+                        showCommentSheet = false
+                    },
+                    onDismiss = { showCommentSheet = false }
+                )
+            }
+
+            // Bottom info and description
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 8.dp, bottom = 8.dp),
+                horizontalAlignment = Alignment.Start
             )
+            {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.profile),
+                        contentDescription = "Profile",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = video.user.name,
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(Color.Blue, shape = RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { /* Handle follow */ }
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Follow",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                }
+                Text(
+                    text = video.description,
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
+
     }
 }
 
@@ -375,10 +406,10 @@ fun VideoPlayer(
 @Preview(showBackground = true)
 @Composable
 private fun ScreenContentPreview() {
-    VideoScreen(
-        NavController(LocalContext.current),
-        Modifier,
-        "videoId" ,
-    )
+//    VideoScreen(
+//        NavController(LocalContext.current),
+//        Modifier,
+//        "videoId",
+//    )
 }
 

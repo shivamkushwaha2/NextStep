@@ -1,5 +1,6 @@
 package com.insoft.nextstep.presentation.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,8 +47,12 @@ import com.insoft.nextstep.ui.theme.StatusBarColor
 
 @Composable
 fun LoginScreen(navController: NavHostController, viewModel: AuthViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
+    val savedEmail = sharedPreferences.getString("USER_EMAIL", "") ?: ""
+
     val loginState by viewModel.loginState.collectAsState()
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(savedEmail) }
     var password by remember { mutableStateOf("") }
     val isLoading by viewModel.isLoading.collectAsState()
 
@@ -172,9 +178,28 @@ fun LoginScreen(navController: NavHostController, viewModel: AuthViewModel = hil
         }
 
     }
+
+
+    LaunchedEffect(loginState) {
+        loginState?.let { user ->
+            saveUserData(context, email, user.token, user.user.name,user.user._id)
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.login.route) { inclusive = true }
+            }
+        }
+    }
 }
 
-
+private fun saveUserData(context: Context, email: String, token: String,name:String,id:String) {
+    val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
+    sharedPreferences.edit().apply {
+        putString("USER_EMAIL", email)
+        putString("USER_TOKEN", token)
+        putString("USER_ID", id)
+        putString("USER_NAME", name)
+        apply()
+    }
+}
 @Preview(showSystemUi = true)
 @Composable
 private fun LoginPreview() {

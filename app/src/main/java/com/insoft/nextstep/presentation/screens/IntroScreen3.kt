@@ -1,5 +1,6 @@
 package com.insoft.nextstep.presentation.screens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -35,6 +37,9 @@ import com.insoft.nextstep.presentation.navigation.Screen
 
 @Composable
 fun IntroScreen3(modifier: Modifier = Modifier, navController: NavHostController) {
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -96,10 +101,16 @@ fun IntroScreen3(modifier: Modifier = Modifier, navController: NavHostController
                 CircularIconsRow(
                     onBackClick = { navController.navigateUp() },
                     onForwardClick = {
+                        sharedPreferences.edit().putBoolean("isIntroCompleted", true).apply()  // Save intro completion
                         navController.navigate(Screen.signup.route) {
                             popUpTo(Screen.intro3.route) { inclusive = true }
                         }
                     }
+//                    onForwardClick = {
+//                        navController.navigate(Screen.signup.route) {
+//                            popUpTo(Screen.intro3.route) { inclusive = true }
+//                        }
+//                    }
                 )
             }
             Spacer(Modifier.height(50.dp))
