@@ -1,6 +1,7 @@
 package com.insoft.nextstep.presentation.screens
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,7 +23,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.AddToPhotos
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Share
@@ -32,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults.contentWindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -40,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,11 +63,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
-import com.insoft.nextstep.data.model.VideoModel
+import com.insoft.nextstep.data.model.LikeInfo
 import com.insoft.nextstep.data.model.VideoResponse
 import com.insoft.nextstep.presentation.components.BottomNavigationBar
 import com.insoft.nextstep.presentation.viewmodels.VideoViewModel
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,9 +113,6 @@ fun ScreenContent(
     val likes by viewModel.likesFlow.collectAsState()
     val comments by viewModel.commentsFlow.collectAsState()
 
-    LaunchedEffect(comments) {
-        println("UI Updated Comments Data: $comments")  // ✅ Debugging
-    }
     val videos by videoViewModel.videos.collectAsState()
     val context = LocalContext.current
 
@@ -178,14 +172,18 @@ private fun VideoOverlayUI(
     video: VideoResponse,
     userId: String,
     viewModel: WebSocketViewModel,
-    likes: Map<String, Int>,
+    likes: Map<String, LikeInfo>,
     comments: Map<String, Int>,
     modifier: Modifier = Modifier,
     navController: NavController
 ) {
-    var isLiked by remember { mutableStateOf(video.likes.contains(userId)) }
-    val likeCount =
-        if (likes[video._id] != null) likes[video._id].toString() else video.likes.size.toString()
+
+    val context = LocalContext.current
+
+    val likeInfo = likes[video._id]
+    val isLiked = likeInfo?.isLiked ?: video.likes.contains(userId)
+    val likeCount = likeInfo?.count ?: video.likes.size
+
     val shares by viewModel.sharesFlow.collectAsState()
     val shareCount =
         if (shares[video._id] != null) shares[video._id].toString() else video.shares.size.toString()
@@ -236,8 +234,7 @@ private fun VideoOverlayUI(
             {
                 IconButton(
                     onClick = {
-                        isLiked = !isLiked  // Toggle like state
-                        viewModel.sendLike(videoId = video._id, userId, isLiked)
+                        viewModel.sendLike(videoId = video._id, userId, isLike = !isLiked)
                     },
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -248,9 +245,8 @@ private fun VideoOverlayUI(
                         modifier = Modifier.size(32.dp)
                     )
                 }
-//            val like = if(likes[video._id] !=null ) likes[video._id].toString() else video.likes.size.toString()
                 Text(
-                    text = likeCount,
+                    text = likeCount.toString(),
                     color = Color.White,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(end = 16.dp)
@@ -280,7 +276,20 @@ private fun VideoOverlayUI(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 IconButton(
-                    onClick = { viewModel.sendShare(videoId = video._id, userId) },
+                    onClick = {
+                        val shareText = "${video.description}\n\nWatch now: ${video.videoUrl}"
+
+                        val sendIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                            type = "text/plain"
+                        }
+
+                        val shareIntent = Intent.createChooser(sendIntent, "Share Video")
+                        context.startActivity(shareIntent)
+
+                        viewModel.sendShare(videoId = video._id, userId)
+                     },
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(

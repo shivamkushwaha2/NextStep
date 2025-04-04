@@ -2,6 +2,7 @@
 accompanistSystemuicontroller = "0.30.1"
 accompanistSystemuicontrollerVersion = "0.33.2-alpha"
 agp = "8.8.0"
+compose = "1.0.0-alpha.1"
 converterGson = "2.9.0"
 hiltAndroid = "2.51.1"
 hiltNavigationCompose = "1.2.0"
@@ -27,6 +28,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+compose = { module = "com.github.bumptech.glide:compose", version.ref = "compose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }

@@ -1,25 +1,44 @@
 package com.insoft.nextstep.data
 
+import com.insoft.nextstep.data.model.Comment
+import com.insoft.nextstep.data.model.LikeInfo
+import com.insoft.nextstep.data.model.Users
 import okhttp3.*
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 import io.socket.client.IO
 import io.socket.client.Socket
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URISyntaxException
 
 object WebSocketManager {
     private var socket: Socket? = null
-    private val _likesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val likesFlow = _likesFlow
+
+
+    private val _likesFlow = MutableStateFlow<Map<String, LikeInfo>>(emptyMap())
+    val likesFlow: StateFlow<Map<String, LikeInfo>> = _likesFlow
 
     private val _commentsFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
     val commentsFlow: StateFlow<Map<String, Int>> = _commentsFlow
 
 
-    private val _sharesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())  // ✅ New Flow for Shares
+    private val _sharesFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
     val sharesFlow: StateFlow<Map<String, Int>> = _sharesFlow
+
+
+
+    private val _likesFlowPost = MutableStateFlow<Map<String, LikeInfo>>(emptyMap())
+    val likesFlowPost: StateFlow<Map<String, LikeInfo>> = _likesFlowPost
+
+
+    private val _commentsMapPost = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
+    val commentsMapPost: StateFlow<Map<String, List<Comment>>> = _commentsMapPost
+
+    private val _sharesFlowPost = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val sharesFlowPost: StateFlow<Map<String, Int>> = _sharesFlowPost
 
     fun connectWebSocket() {
         try {
@@ -40,9 +59,10 @@ object WebSocketManager {
                     val json = args[0] as JSONObject
                     val videoId = json.getString("videoId")
                     val likesCount = json.getInt("likes")
+                    val userLiked = json.optBoolean("userLiked", false) // ⬅️ safe optional handling
 
                     _likesFlow.value = _likesFlow.value.toMutableMap().apply {
-                        this[videoId] = likesCount
+                        this[videoId] = LikeInfo(likesCount, userLiked)
                     }
                 }
             }
@@ -69,6 +89,65 @@ object WebSocketManager {
                         this[videoId] = sharesCount
                     }
                     println("🔗 Share Update Received: $videoId -> $sharesCount shares")
+                }
+            }
+
+
+
+            socket?.on("postLikeUpdate") { args ->
+                if (args.isNotEmpty()) {
+                    val json = args[0] as JSONObject
+                    val postId = json.getString("postId")
+                    val likesCount = json.getInt("likes")
+                    val userLiked = json.optBoolean("userLiked", false) // ⬅️ safe optional handling
+
+                    _likesFlowPost.value = _likesFlowPost.value.toMutableMap().apply {
+                        this[postId] = LikeInfo(likesCount, userLiked)
+                    }
+                }
+            }
+
+
+            socket?.on("postCommentUpdate") { args ->
+                if (args.isNotEmpty()) {
+                    val json = args[0] as JSONObject
+                    val postId = json.getString("postId")
+                    val commentJson = json.getJSONObject("comment")
+                    val userJson = commentJson.getJSONObject("user")
+
+                    val comment = Comment(
+                        _id = commentJson.getString("_id"),
+                        text = commentJson.getString("text"),
+                        createdAt = commentJson.getString("createdAt"),
+                        user = Users(
+                            id = userJson.getString("_id"),
+                            name = userJson.getString("name"),
+                            profilePic = userJson.optString("profilePic", null)
+                        )
+                    )
+
+                    _commentsMapPost.value = _commentsMapPost.value.toMutableMap().apply {
+                        val current = this[postId]?.toMutableList() ?: mutableListOf()
+                        if (current.none { it._id == comment._id }) {
+                            current.add(comment)
+                            this[postId] = current
+                        }
+                    }
+                }
+            }
+
+
+
+            socket?.on("postShareUpdate") { args ->
+                if (args.isNotEmpty()) {
+                    val json = args[0] as JSONObject
+                    val postId = json.getString("postId")
+                    val sharesCount = json.getInt("shares")
+                    println("👍 Share Update Received: ${args[0]}")
+
+                    _sharesFlowPost.value = _sharesFlowPost.value.toMutableMap().apply {
+                        this[postId] = sharesCount
+                    }
                 }
             }
 
@@ -100,6 +179,30 @@ object WebSocketManager {
             put("userId", userId)
         }
         socket?.emit("shareEvent", shareEvent)
+    }
+    fun sendLike_Post(postId: String, userId: String, isLike: Boolean) {
+        val likeEvent = JSONObject().apply {
+            put("postId", postId)
+            put("userId", userId)
+            put("isLike", isLike)
+        }
+        socket?.emit("postLikeEvent", likeEvent) //Correct Socket.IO format
+    }
+
+    fun sendComment_Post(postId: String, userId: String, commentText: String) {
+        val commentEvent = JSONObject().apply {
+            put("postId", postId)
+            put("userId", userId)
+            put("comment", commentText)
+        }
+        socket?.emit("postCommentEvent", commentEvent) // correct Socket.IO format
+    }
+    fun sendShare_Post(postId: String, userId: String) {
+        val shareEvent = JSONObject().apply {
+            put("postId", postId)
+            put("userId", userId)
+        }
+        socket?.emit("postShareEvent", shareEvent)
     }
 
     fun closeWebSocket() {

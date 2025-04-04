@@ -29,7 +29,8 @@ import com.insoft.nextstep.presentation.viewmodels.JobViewModel
 fun JobScreen(navController: NavHostController, modifier: Modifier = Modifier,  viewModel: JobViewModel = hiltViewModel()) {
 //    StatusBarColor(colorResource(R.color.blue_gradient_color))
     val jobs by viewModel.jobs.collectAsState(emptyList())
-
+    val sharedPreferences = navController.context.getSharedPreferences("NextStepPrefs", 0)
+    val image = sharedPreferences.getString("USER_IMAGE", "")
     val scrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(state = rememberTopAppBarState())
     Scaffold(modifier
@@ -39,7 +40,7 @@ fun JobScreen(navController: NavHostController, modifier: Modifier = Modifier,  
             BottomNavigationBar(navController)
         },
         topBar = {
-            TopBar(scrollBehavior, "Jobs")
+            TopBar(scrollBehavior, "Jobs", image)
         }) { paddingValues ->
         LazyColumn(
             modifier = Modifier

@@ -2,6 +2,8 @@ package com.insoft.nextstep.presentation.components
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,6 +40,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,16 +77,26 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil3.compose.AsyncImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.insoft.nextstep.R
 import com.insoft.nextstep.data.model.JobModel
+import com.insoft.nextstep.data.model.PostResponse
 import com.insoft.nextstep.presentation.navigation.Screen
+import com.insoft.nextstep.presentation.viewmodels.WebSocketViewModel
 import com.insoft.nextstep.ui.theme.Blue1
 import com.insoft.nextstep.ui.theme.Blue2
 import com.insoft.nextstep.ui.theme.Purple40
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import kotlin.time.Duration
 
 
 @Composable
@@ -536,115 +549,238 @@ fun openCustomTab(context: Context, url: String) {
 
     intent.launchUrl(context, Uri.parse(url))
 }
-
+@OptIn(ExperimentalGlideComposeApi::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PostItem(modifier: Modifier = Modifier) {
+fun PostItem(modifier: Modifier = Modifier, post: PostResponse) {
+   val viewModel: WebSocketViewModel = viewModel()
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
+    val userId = sharedPreferences.getString("USER_ID", "") ?: ""
+
     Card(
-        modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(top = 10.dp),
-//        elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-//        shape = RoundedCornerShape(12.dp)
     ) {
-        Box() {
-            Column(
-                modifier = modifier
-                    .padding(12.dp)
-            ) {
-                Row {
-                    Image(
-                        Icons.Filled.Person,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .size(38.dp) // Adjust size as needed
-                            .clip(CircleShape)
-                            .border(2.dp, Purple40, CircleShape)
-                            .padding(4.dp),
-                        contentScale = ContentScale.Crop,
-
-                        )
-                    Column {
-                        Text(
-                            modifier = Modifier.padding(start = 12.dp),
-                            text = "Shivam kushwaha",
-                            style = TextStyle(
-                                color = Color.Black,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        )
-                        Text(
-                            modifier = Modifier.padding(start = 12.dp, top = 3.dp),
-                            text = "3 days ago",
-                            style = TextStyle(
-                                color = Color.Gray,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal
-                            )
-                        )
-                    }
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            // ✅ Profile and User Info
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                GlideImage(
+                    model = post.user?.profilePic ?: R.drawable.profile, // Load user's profile picture
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Purple40, CircleShape)
+                        .padding(2.dp),
+                    contentScale = ContentScale.Crop
+                ) {
+                    it.load(post.user?.profilePic)
+                        .placeholder(R.drawable.profile)
+                        .error(R.drawable.profile)
                 }
-                Spacer(Modifier.height(14.dp))
-                Text(
-                    modifier = Modifier.padding(start = 4.dp),
-                    text = "This course is made for people who want to learn DSA from A to Z for free in a well-organized and structured manner. The lecture quality is better than what you get in paid courses, the only thing we don’t provide is doubt support, but trust me our YouTube video comments resolve that as well, we have a wonderful community of 250K+ people who engage in all of the videos.",
-                    style = TextStyle(
-                        color = Color.Black,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal
+
+                Column(modifier = Modifier.padding(start = 12.dp)) {
+                    Text(
+                        text = post.user?.name ?: "Unknown User",
+                        style = TextStyle(
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     )
-                )
-
-                Spacer(Modifier.height(14.dp))
-
-                Image(
-                    painter = painterResource(id = R.drawable.flowering1),
-                    null,
-                    modifier = Modifier.clip(shape = RoundedCornerShape(12.dp))
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically)
-                {
-                    IconButton(onClick = {},
-                        content = {
-                            Icon(
-                                Icons.Outlined.ThumbUp,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        })
-                    Text(text = "4")
-                    Spacer(Modifier.width(10.dp))
-                    IconButton(onClick = {},
-                        content = {
-                            Icon(
-                                Icons.AutoMirrored.Outlined.Chat,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        })
-                    Text(text = "4")
-
-                    Spacer(Modifier.width(10.dp))
-                    IconButton(onClick = {},
-                        content = {
-                            Icon(
-                                Icons.Outlined.Share,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        })
+                    Text(
+                        text = formatTimeAgo(post.createdAt),
+                        style = TextStyle(
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    )
                 }
             }
 
+            Spacer(Modifier.height(14.dp))
+
+            // ✅ Post Content
+            Text(
+                text = post.content,
+                style = TextStyle(
+                    color = Color.Black,
+                    fontSize = 14.sp
+                ),
+                modifier = Modifier.padding(start = 4.dp)
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            // ✅ Post Image (if available)
+            post.imageUrl?.let {
+                GlideImage(
+                    model = post.imageUrl,
+                    contentDescription = "Profile Picture",
+                    modifier =  Modifier
+                        .fillMaxWidth().heightIn(max = 500.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop,
+                ) {
+                    it.load(post.imageUrl,)
+                        .placeholder(R.drawable.flowering1)
+                        .error(R.drawable.flowering1)
+                }
+
+                Spacer(Modifier.height(14.dp))
+            }
+
+            // ✅ Post Actions (Like, Comment, Share)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { /* Handle Like */ }) {
+                    Icon(Icons.Outlined.ThumbUp, contentDescription = "Like", modifier = Modifier.size(24.dp))
+                }
+                Text(text = post.likes.size.toString())
+
+                Spacer(Modifier.width(10.dp))
+
+                IconButton(onClick = { /* Handle Comment */ }) {
+                    Icon(Icons.AutoMirrored.Outlined.Chat, contentDescription = "Comment", modifier = Modifier.size(24.dp))
+                }
+                Text(text = post.comments.size.toString())
+
+                Spacer(Modifier.width(10.dp))
+
+                IconButton(onClick = { /* Handle Share */ }) {
+                    Icon(Icons.Outlined.Share, contentDescription = "Share", modifier = Modifier.size(24.dp))
+                }
+            }
         }
     }
-
 }
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatTimeAgo(timestamp: String): String {
+    val formatter = DateTimeFormatter.ISO_DATE_TIME
+    val time = LocalDateTime.parse(timestamp, formatter)
+    val now = LocalDateTime.now()
+
+    val minutes = ChronoUnit.MINUTES.between(time, now)
+    val hours = ChronoUnit.HOURS.between(time, now)
+    val days = ChronoUnit.DAYS.between(time, now)
+
+    return when {
+        minutes < 60 -> "$minutes min ago"
+        hours < 24 -> "$hours hours ago"
+        days < 7 -> "$days days ago"
+        else -> time.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+    }
+}
+//@Composable
+//fun PostItem(modifier: Modifier = Modifier, post: PostResponse) {
+//    Card(
+//        modifier
+//            .fillMaxWidth()
+//            .padding(top = 10.dp),
+//        colors = CardDefaults.cardColors(containerColor = Color.White),
+//    ) {
+//        Box() {
+//            Column(
+//                modifier = modifier
+//                    .padding(12.dp)
+//            ) {
+//                Row {
+//                    Image(
+//                        Icons.Filled.Person,
+//                        contentDescription = "Profile Picture",
+//                        modifier = Modifier
+//                            .size(38.dp) // Adjust size as needed
+//                            .clip(CircleShape)
+//                            .border(2.dp, Purple40, CircleShape)
+//                            .padding(4.dp),
+//                        contentScale = ContentScale.Crop,
+//
+//                        )
+//                    Column {
+//                        Text(
+//                            modifier = Modifier.padding(start = 12.dp),
+//                            text = "Shivam kushwaha",
+//                            style = TextStyle(
+//                                color = Color.Black,
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.Medium
+//                            )
+//                        )
+//                        Text(
+//                            modifier = Modifier.padding(start = 12.dp, top = 3.dp),
+//                            text = "3 days ago",
+//                            style = TextStyle(
+//                                color = Color.Gray,
+//                                fontSize = 14.sp,
+//                                fontWeight = FontWeight.Normal
+//                            )
+//                        )
+//                    }
+//                }
+//                Spacer(Modifier.height(14.dp))
+//                Text(
+//                    modifier = Modifier.padding(start = 4.dp),
+//                    text = "This course is made for people who want to learn DSA from A to Z for free in a well-organized and structured manner. The lecture quality is better than what you get in paid courses, the only thing we don’t provide is doubt support, but trust me our YouTube video comments resolve that as well, we have a wonderful community of 250K+ people who engage in all of the videos.",
+//                    style = TextStyle(
+//                        color = Color.Black,
+//                        fontSize = 14.sp,
+//                        fontWeight = FontWeight.Normal
+//                    )
+//                )
+//
+//                Spacer(Modifier.height(14.dp))
+//
+//                Image(
+//                    painter = painterResource(id = R.drawable.flowering1),
+//                    null,
+//                    modifier = Modifier.clip(shape = RoundedCornerShape(12.dp))
+//                )
+//
+//                Row(verticalAlignment = Alignment.CenterVertically)
+//                {
+//                    IconButton(onClick = {},
+//                        content = {
+//                            Icon(
+//                                Icons.Outlined.ThumbUp,
+//                                contentDescription = null,
+//                                modifier = Modifier
+//                                    .size(24.dp)
+//                            )
+//                        })
+//                    Text(text = "4")
+//                    Spacer(Modifier.width(10.dp))
+//                    IconButton(onClick = {},
+//                        content = {
+//                            Icon(
+//                                Icons.AutoMirrored.Outlined.Chat,
+//                                contentDescription = null,
+//                                modifier = Modifier
+//                                    .size(24.dp)
+//                            )
+//                        })
+//                    Text(text = "4")
+//
+//                    Spacer(Modifier.width(10.dp))
+//                    IconButton(onClick = {},
+//                        content = {
+//                            Icon(
+//                                Icons.Outlined.Share,
+//                                contentDescription = null,
+//                                modifier = Modifier
+//                                    .size(24.dp)
+//                            )
+//                        })
+//                }
+//            }
+//
+//        }
+//    }
+//
+//}
 
 @Composable
 fun ProjectItem(

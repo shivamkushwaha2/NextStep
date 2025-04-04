@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.insoft.nextstep.presentation.screens.AddPostScreen
 import com.insoft.nextstep.presentation.screens.IntroScreen1
 import com.insoft.nextstep.presentation.screens.IntroScreen2
 import com.insoft.nextstep.presentation.screens.IntroScreen3
@@ -131,6 +132,8 @@ fun MyApp(modifier: Modifier = Modifier) {
             composable(Screen.UploadVideo.route) {
                 UploadVideo(navController = navController)
             }
+            composable("add_post") { AddPostScreen(navController) }
+
         }
     }
 }

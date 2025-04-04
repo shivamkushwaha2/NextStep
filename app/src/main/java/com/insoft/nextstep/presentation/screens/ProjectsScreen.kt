@@ -21,12 +21,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.insoft.nextstep.R
 import com.insoft.nextstep.presentation.components.BottomNavigationBar
-import com.insoft.nextstep.presentation.components.JobItem
 import com.insoft.nextstep.presentation.components.ProjectItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectsScreen(modifier: Modifier = Modifier, navController: NavHostController) {
+    val sharedPreferences = navController.context.getSharedPreferences("NextStepPrefs", 0)
+    val image = sharedPreferences.getString("USER_IMAGE", "")
+
     val scrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(state = rememberTopAppBarState())
     Scaffold(modifier
@@ -36,7 +38,7 @@ fun ProjectsScreen(modifier: Modifier = Modifier, navController: NavHostControll
             BottomNavigationBar(navController)
         },
         topBar = {
-            TopBar(scrollBehavior, "Projects")
+            TopBar(scrollBehavior, "Projects", image)
         }) { paddingValues ->
         LazyColumn(
             modifier = Modifier
