@@ -1,11 +1,15 @@
 package com.insoft.nextstep.presentation.viewmodels
 
+import Project
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.insoft.nextstep.data.WebSocketManager
 import com.insoft.nextstep.data.model.Comment
+import com.insoft.nextstep.data.model.CommentX
 import com.insoft.nextstep.data.model.LikeInfo
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
@@ -37,6 +41,12 @@ private val _commentsMapPost = MutableStateFlow<Map<String, List<Comment>>>(empt
 
     private val _sharesFlowPost = MutableStateFlow<Map<String, Int>>(emptyMap())
     val sharesFlowPost: StateFlow<Map<String, Int>> = _sharesFlowPost
+
+    private val _upvotesFlow = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val upvotesFlow: StateFlow<Map<String, List<String>>> = _upvotesFlow
+
+    private val _projectommentsFlow = MutableStateFlow<Map<String, List<CommentX>>>(emptyMap())
+    val projectommentsFlow: StateFlow<Map<String, List<CommentX>>> = _projectommentsFlow
 
     init {
         println("WebSocket init")
@@ -73,6 +83,18 @@ private val _commentsMapPost = MutableStateFlow<Map<String, List<Comment>>>(empt
                 _sharesFlowPost.value = updatedShares
             }
         }
+
+        viewModelScope.launch {
+            WebSocketManager.upvotesFlow.collect { updatedUpvotes ->
+                _upvotesFlow.value = updatedUpvotes
+            }
+        }
+        viewModelScope.launch {
+            WebSocketManager.projectcommentsFlow.collect { updatedComments ->
+                _projectommentsFlow.value = updatedComments
+            }
+        }
+
     }
 
         fun sendLike(videoId: String, userId: String, isLike: Boolean) {
@@ -100,7 +122,13 @@ private val _commentsMapPost = MutableStateFlow<Map<String, List<Comment>>>(empt
     fun clearCommentsMap() {
         _commentsMapPost.value = emptyMap()
     }
+    fun sendUpvote(projectId: String, userId: String) {
+        WebSocketManager.sendProjectUpvote(projectId, userId)
+    }
 
+    fun sendProjectComment(projectId: String, userId: String, commentText: String, username: String, profilePic: String) {
+        WebSocketManager.sendProjectComment(projectId, userId, commentText, username, profilePic )
+    }
     override fun onCleared() {
             super.onCleared()
             WebSocketManager.closeWebSocket()

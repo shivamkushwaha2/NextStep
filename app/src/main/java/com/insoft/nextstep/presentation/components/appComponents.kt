@@ -128,87 +128,67 @@ fun HeadingText(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun InputBox(label: String, modifier: Modifier = Modifier, painterResource: Painter,  value: String,
-             onValueChange: (String) -> Unit ) {
-    val txt = remember { mutableStateOf("") }
-
+fun InputBox(
+    label: String,
+    modifier: Modifier = Modifier,
+    painterResource: Painter,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean = false
+) {
     OutlinedTextField(
         value = value,
-        label = {
-            Text(
-                text = label,
-                color = Color.DarkGray,
-                fontSize = 16.sp,
-                modifier = Modifier.background(Color.Transparent)
-            )
-        },
+        label = { Text(text = label, color = Color.DarkGray, fontSize = 16.sp) },
         textStyle = TextStyle(fontSize = 16.sp),
         keyboardOptions = KeyboardOptions.Default,
-        onValueChange = { onValueChange(it) },
+        onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        leadingIcon = {
-            Icon(
-                painter = painterResource,
-                contentDescription = ""
-            )
-        },
+        isError = isError,
+        leadingIcon = { Icon(painter = painterResource, contentDescription = "") },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color(0x1DF4F6F6),
             unfocusedContainerColor = Color(0xFFF6F6F6),
         )
     )
 }
-
 @Composable
-fun PasswordInputBox(label: String, modifier: Modifier = Modifier, painterResource: Painter,  value: String,
-                     onValueChange: (String) -> Unit ) {
-    val password = remember { mutableStateOf("") }
+fun PasswordInputBox(
+    label: String,
+    modifier: Modifier = Modifier,
+    painterResource: Painter,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean = false
+) {
     val isVisible = remember { mutableStateOf(false) }
 
     OutlinedTextField(
         value = value,
-        onValueChange = { onValueChange(it)},
+        onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
-        label = {
-            Text(
-                text = label,
-                color = Color.DarkGray,
-                fontSize = 16.sp,
-                modifier = Modifier.background(Color.Transparent)
-            )
-        },
+        label = { Text(text = label, color = Color.DarkGray, fontSize = 16.sp) },
         textStyle = TextStyle(fontSize = 16.sp),
         shape = RoundedCornerShape(16.dp),
-        leadingIcon = {
-            Icon(
-                painter = painterResource,
-                contentDescription = null // Provide a description if needed
-            )
-        },
+        leadingIcon = { Icon(painter = painterResource, contentDescription = null) },
         trailingIcon = {
-            val icon = if (isVisible.value) {
-                Icons.Filled.Visibility
-            } else {
-                Icons.Filled.VisibilityOff
-            }
+            val icon = if (isVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             val description = if (isVisible.value) "Hide password" else "Show password"
             IconButton(onClick = { isVisible.value = !isVisible.value }) {
                 Icon(imageVector = icon, contentDescription = description)
             }
         },
-        visualTransformation = if (isVisible.value) {
-            VisualTransformation.None
-        } else {
-            PasswordVisualTransformation()
-        },
+        visualTransformation = if (isVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        isError = isError,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color(0x1DF4F6F6),
             unfocusedContainerColor = Color(0xFFF6F6F6),
         )
     )
 }
+
+
 
 @Composable
 fun CheckBoxComponent(text: String, modifier: Modifier) {
@@ -790,15 +770,7 @@ fun ProjectItem(
     description: String? = null,
     upvotes: Int? = null
 ) {
-//    Card(
-//        modifier
-//            .fillMaxWidth()
-//            .padding(4.dp),
-//        elevation = CardDefaults.cardElevation(3.dp),
-//        colors = CardDefaults.cardColors(containerColor = Color.White),
-//        shape = RoundedCornerShape(0.dp)
-//    )
-//    {
+
     Box(
         modifier
             .background(Color.White)
@@ -840,7 +812,6 @@ fun ProjectItem(
 
                     Text(
                         text = "Generate courses with the help of AI models.",
-//                        modifier = modifier.width(200.dp),
                         textAlign = TextAlign.Start,
                         style = TextStyle(
                             fontSize = 14.sp,
@@ -908,7 +879,6 @@ fun ProjectItem(
         }
 
     }
-//    }
 
 }
 

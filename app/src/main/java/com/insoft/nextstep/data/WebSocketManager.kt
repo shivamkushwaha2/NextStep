@@ -1,6 +1,7 @@
 package com.insoft.nextstep.data
 
 import com.insoft.nextstep.data.model.Comment
+import com.insoft.nextstep.data.model.CommentX
 import com.insoft.nextstep.data.model.LikeInfo
 import com.insoft.nextstep.data.model.Users
 import okhttp3.*
@@ -39,6 +40,14 @@ object WebSocketManager {
 
     private val _sharesFlowPost = MutableStateFlow<Map<String, Int>>(emptyMap())
     val sharesFlowPost: StateFlow<Map<String, Int>> = _sharesFlowPost
+
+
+    private val _upvotesFlow = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val upvotesFlow: StateFlow<Map<String, List<String>>> = _upvotesFlow
+
+    private val _projectcommentsFlow = MutableStateFlow<Map<String, List<CommentX>>>(emptyMap())
+    val projectcommentsFlow: StateFlow<Map<String, List<CommentX>>> = _projectcommentsFlow
+
 
     fun connectWebSocket() {
         try {
@@ -151,11 +160,41 @@ object WebSocketManager {
                 }
             }
 
+
+            socket?.on("project_updated") { args ->
+                if (args.isNotEmpty()) {
+                    val json = args[0] as JSONObject
+                    val projectId = json.getString("projectId")
+                    val upvotes = json.getJSONArray("upvotes").let { array ->
+                        List(array.length()) { array.getString(it) }
+                    }
+                    val comments = json.getJSONArray("comments").let { array ->
+                        List(array.length()) { index ->
+                            val commentJson = array.getJSONObject(index)
+                            CommentX(
+                                _id = commentJson.getString("_id"),
+                                createdAt = commentJson.getString("createdAt"),
+                                profilePic = commentJson.getString("profilePic"),
+                                text = commentJson.getString("text"),
+                                userId = commentJson.getString("userId"),
+                                username = commentJson.getString("username")
+                            )
+                        }
+                    }
+
+                    _upvotesFlow.value = _upvotesFlow.value.toMutableMap().apply {
+                        this[projectId] = upvotes
+                    }
+                    _projectcommentsFlow.value = _projectcommentsFlow.value.toMutableMap().apply {
+                        this[projectId] = comments
+                    }
+                }
+            }
+
         } catch (e: URISyntaxException) {
             e.printStackTrace()
         }
     }
-
     fun sendLike(videoId: String, userId: String, isLike: Boolean) {
         val likeEvent = JSONObject().apply {
             put("videoId", videoId)
@@ -203,6 +242,24 @@ object WebSocketManager {
             put("userId", userId)
         }
         socket?.emit("postShareEvent", shareEvent)
+    }
+    fun sendProjectUpvote(projectId: String, userId: String) {
+        val payload = JSONObject().apply {
+            put("projectId", projectId)
+            put("userId", userId)
+        }
+        socket?.emit("upvote_project", payload)
+    }
+
+    fun sendProjectComment(projectId: String, userId: String, username: String, profilePic: String, text: String) {
+        val payload = JSONObject().apply {
+            put("projectId", projectId)
+            put("userId", userId)
+            put("username", username)
+            put("profilePic", profilePic)
+            put("text", text)
+        }
+        socket?.emit("comment_project", payload)
     }
 
     fun closeWebSocket() {

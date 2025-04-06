@@ -1,7 +1,10 @@
 package com.insoft.nextstep.presentation.screens
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
+import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -36,11 +39,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -63,141 +68,193 @@ fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hi
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val isLoading by viewModel.isLoading.collectAsState()
+    var profilePicUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
-    var profilePicUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    // Validation error states
+    var firstNameError by remember { mutableStateOf<String?>(null) }
+    var lastNameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         profilePicUri = uri
     }
-    Log.d("TAG", "SignUpScreen: $profilePicUri")
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(
+                        colorResource(R.color.white) ,colorResource(R.color.green_gradient_color),
+                    )
+                )
+            )
     ) {
-
-//        if (profilePicUri != null) {
-//            Image(
-//                painter = rememberAsyncImagePainter(profilePicUri),
-//                contentDescription = "Profile Picture",
-//                modifier = Modifier
-//                    .size(100.dp)
-//                    .clip(CircleShape)
-//                    .border(2.dp, Color.Gray, CircleShape)
-//            )
-//        }
+//        Image(
+//            painter = painterResource(id = R.drawable.app_image),
+//            contentDescription = "Login Background",
+//            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
+//            contentScale = ContentScale.FillWidth
+//        )
         Card(
             modifier = Modifier
-                .padding(start = 10.dp, end = 10.dp, bottom = 80.dp)
-                .align(alignment = Alignment.BottomCenter),
-
+                .padding(start = 5.dp, end = 5.dp, bottom = 90.dp, top = 5.dp)
+                .align(Alignment.BottomCenter),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(14.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .background(
-                        brush = Brush.verticalGradient(
-                            listOf(
-                                colorResource(R.color.blue_gradient_color),
-                                colorResource(R.color.white)
-                            )
+                modifier = Modifier.background(
+                    brush = Brush.verticalGradient(
+                        listOf(
+                            colorResource(R.color.blue_gradient_color),
+                            colorResource(R.color.white)
                         )
                     )
+                )
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .background(Color.Transparent)
+                    modifier = Modifier.padding(10.dp)
                 ) {
                     Spacer(modifier = Modifier.height(10.dp))
                     HeadingText("Create An Account")
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Profile Image Picker
                     val imagePainter: Painter = if (profilePicUri != null) {
                         rememberAsyncImagePainter(model = profilePicUri)
                     } else {
-                        painterResource(id = R.drawable.profile) // Your default drawable
+                        painterResource(id = R.drawable.profile)
                     }
                     Image(
                         painter = imagePainter,
                         contentDescription = "Profile Picture",
                         modifier = Modifier
-                            .clickable {
-                                launcher.launch("image/*")
-                            }
+                            .clickable { launcher.launch("image/*") }
                             .align(Alignment.CenterHorizontally)
                             .size(70.dp)
                             .clip(CircleShape)
                             .border(2.dp, Color.Gray, CircleShape)
                     )
+
                     Spacer(modifier = Modifier.height(10.dp))
+
                     InputBox(
-                        "First Name",
-                        Modifier,
-                        painterResource(id = R.drawable.baseline_person_24),
+                        label = "First Name",
+                        painterResource = painterResource(id = R.drawable.baseline_person_24),
                         value = firstName,
-                        onValueChange = { firstName = it }
+                        onValueChange = {
+                            firstName = it
+                            firstNameError = null
+                        },
+                        isError = firstNameError != null
                     )
+                    if (firstNameError != null) {
+                        Text(firstNameError!!, color = Color.Red, fontSize = 12.sp)
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
+
                     InputBox(
-                        "Last Name",
+                        label = "Last Name",
                         painterResource = painterResource(id = R.drawable.baseline_person_24),
                         value = lastName,
-                        onValueChange = { lastName = it }
+                        onValueChange = {
+                            lastName = it
+                            lastNameError = null
+                        },
+                        isError = lastNameError != null
                     )
+                    if (lastNameError != null) {
+                        Text(lastNameError!!, color = Color.Red, fontSize = 12.sp)
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
+
                     InputBox(
-                        "Email",
+                        label = "Email",
                         painterResource = painterResource(id = R.drawable.baseline_email_24),
                         value = email,
-                        onValueChange = { email = it }
+                        onValueChange = {
+                            email = it
+                            emailError = null
+                        },
+                        isError = emailError != null
                     )
+                    if (emailError != null) {
+                        Text(emailError!!, color = Color.Red, fontSize = 12.sp)
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
+
                     PasswordInputBox(
-                        "Password",
+                        label = "Password",
                         painterResource = painterResource(id = R.drawable.baseline_lock_24),
                         value = password,
-                        onValueChange = { password = it }
+                        onValueChange = {
+                            password = it
+                            passwordError = null
+                        },
+                        isError = passwordError != null
                     )
-//            Spacer(modifier = Modifier.height(5.dp))
+                    if (passwordError != null) {
+                        Text(passwordError!!, color = Color.Red, fontSize = 12.sp)
+                    }
 
-//            CheckBoxComponent(
-//                "I agree to the Terms & Conditions",
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(bottom = 16.dp)
-//            )
                     Spacer(modifier = Modifier.height(30.dp))
+
                     if (isLoading) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                     } else {
-
                         ButtonComponent(
                             text = "Sign Up",
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    viewModel.signup(
-                                        "$firstName $lastName",
-                                        email,
-                                        password,
-                                        profilePicUri,
-                                        context
-                                    )
-                                    Log.d("SignUpScreen", "success")
+                                    var valid = true
+
+                                    if (firstName.isBlank()) {
+                                        Toast.makeText(context, "First name cannot be empty", Toast.LENGTH_SHORT).show()
+                                        valid = false
+                                    }
+
+                                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                        Toast.makeText(context, "Invalid email format", Toast.LENGTH_SHORT).show()
+                                        valid = false
+                                    }
+
+                                    if (password.length < 6) {
+                                        Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                                        valid = false
+                                    }
+
+                                    if (profilePicUri == null) {
+                                        Toast.makeText(context, "Please select a profile picture", Toast.LENGTH_SHORT).show()
+                                        valid = false
+                                    }
+
+                                    if (valid) {
+                                        viewModel.signup(
+                                            "$firstName $lastName",
+                                            email,
+                                            password,
+                                            profilePicUri,
+                                            context
+                                        )
+                                    }
                                 }
                         )
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
 
+                    Spacer(modifier = Modifier.height(20.dp))
                     DividerTextComponent(Modifier)
-
                     Spacer(modifier = Modifier.height(20.dp))
-
                     ClickableLoginTextComponent(navController = navController)
-                    Spacer(modifier = Modifier.height(20.dp))
-
-
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
         }
@@ -205,14 +262,36 @@ fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hi
 
     LaunchedEffect(signupState) {
         signupState?.let { user ->
-            saveUserData(context, email, user.token, user.user.name, user.user._id,user.user.profilePic)
+            saveUserData(
+                context = context,
+                email = email,
+                token = user.token,
+                name = user.user.name,
+                id = user.user._id,
+                profilePic = user.user.profilePic
+            )
             navController.navigate(Screen.Home.route) {
                 popUpTo(Screen.signup.route) { inclusive = true }
             }
         }
     }
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+            viewModel.clearError()
+        }
+    }
+}
 
 
+@Composable
+fun ErrorText(message: String) {
+    Text(
+        text = message,
+        color = Color.Red,
+        fontSize = 14.sp,
+        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+    )
 }
 
 private fun saveUserData(context: Context, email: String, token: String, name: String, id: String, profilePic: String) {

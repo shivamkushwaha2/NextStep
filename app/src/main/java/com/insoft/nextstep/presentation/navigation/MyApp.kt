@@ -1,7 +1,9 @@
 package com.insoft.nextstep.presentation.navigation
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBars
@@ -15,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.insoft.nextstep.presentation.screens.AddPostScreen
+import com.insoft.nextstep.presentation.screens.CreateProjectScreen
 import com.insoft.nextstep.presentation.screens.IntroScreen1
 import com.insoft.nextstep.presentation.screens.IntroScreen2
 import com.insoft.nextstep.presentation.screens.IntroScreen3
@@ -74,6 +77,7 @@ import com.insoft.nextstep.presentation.screens.VideoScreen
 //    }
 //}
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -133,7 +137,7 @@ fun MyApp(modifier: Modifier = Modifier) {
                 UploadVideo(navController = navController)
             }
             composable("add_post") { AddPostScreen(navController) }
-
+            composable("create_project") { CreateProjectScreen(navController) }
         }
     }
 }

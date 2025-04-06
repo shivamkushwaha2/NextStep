@@ -102,7 +102,7 @@ fun IntroScreen3(modifier: Modifier = Modifier, navController: NavHostController
                     onBackClick = { navController.navigateUp() },
                     onForwardClick = {
                         sharedPreferences.edit().putBoolean("isIntroCompleted", true).apply()  // Save intro completion
-                        navController.navigate(Screen.signup.route) {
+                        navController.navigate(Screen.login.route) {
                             popUpTo(Screen.intro3.route) { inclusive = true }
                         }
                     }

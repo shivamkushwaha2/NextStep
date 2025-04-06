@@ -239,9 +239,9 @@ private fun VideoOverlayUI(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ThumbUpOffAlt,
+                        painter = if (isLiked) painterResource(R.drawable.heartpink) else painterResource(R.drawable.heart),
                         contentDescription = "Like",
-                        tint = if (isLiked) Color.Blue else Color.White, // Change color based on state
+                        tint =  if (isLiked) Color.Unspecified else Color.White, // Change color based on state
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -259,7 +259,7 @@ private fun VideoOverlayUI(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ChatBubbleOutline,
+                        painter = painterResource(R.drawable.comment),
                         contentDescription = "Comment",
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
@@ -293,7 +293,7 @@ private fun VideoOverlayUI(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Share,
+                       painter = painterResource(R.drawable.share),
                         contentDescription = "Share",
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)

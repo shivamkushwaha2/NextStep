@@ -88,6 +88,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import android.graphics.drawable.BitmapDrawable
+import androidx.compose.ui.res.painterResource
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
@@ -180,7 +181,7 @@ fun HomeScreen(
                                     // --- User Info ---
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         GlideImage(
-                                            model = post.user?.profilePic ?: R.drawable.profile,
+                                            model = post.user.profilePic ?: R.drawable.profile,
                                             contentDescription = "Profile Picture",
                                             modifier = Modifier
                                                 .size(38.dp)
@@ -189,7 +190,7 @@ fun HomeScreen(
                                                 .padding(2.dp),
                                             contentScale = ContentScale.Crop
                                         ) {
-                                            it.load(post.user?.profilePic)
+                                            it.load(post.user.profilePic)
                                                 .placeholder(R.drawable.profile)
                                                 .error(R.drawable.profile)
                                         }
@@ -249,9 +250,9 @@ fun HomeScreen(
                                             )
                                         }) {
                                             Icon(
-                                                imageVector = if (isLiked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                                                painter = if (isLiked) painterResource(R.drawable.heartpink) else painterResource(R.drawable.heart),
                                                 contentDescription = "Like",
-                                                tint = if (isLiked) MaterialTheme.colorScheme.primary else Color.Black,
+                                                tint = Color.Unspecified, // Change color based on state
                                                 modifier = Modifier.size(24.dp)
                                             )
                                         }
@@ -267,7 +268,7 @@ fun HomeScreen(
                                             showCommentSheet = true
                                         }) {
                                             Icon(
-                                                imageVector = Icons.AutoMirrored.Outlined.Chat,
+                                                painter = painterResource(R.drawable.comment),
                                                 contentDescription = "Comment",
                                                 modifier = Modifier.size(24.dp)
                                             )
@@ -285,7 +286,7 @@ fun HomeScreen(
                                             webSocketViewModel.sendShare_Post(postId = post._id, userId)
                                         }) {
                                             Icon(
-                                                imageVector = Icons.Outlined.Share,
+                                                painter = painterResource(R.drawable.share),
                                                 contentDescription = "Share",
                                                 modifier = Modifier.size(24.dp)
                                             )
@@ -337,9 +338,8 @@ fun TopBar(scrollBehavior: TopAppBarScrollBehavior, title: String, image: String
                     modifier = Modifier
                         .size(48.dp) // Adjust size as needed
                         .clip(CircleShape)
-                        .border(2.dp, Purple40, CircleShape)
-                        .padding(4.dp),
-                    contentScale = ContentScale.Crop,
+                        .border(2.dp, Purple40, CircleShape),
+                    contentScale = ContentScale.Fit,
                 ) {
                     it.load(image)
                         .placeholder(R.drawable.profile)

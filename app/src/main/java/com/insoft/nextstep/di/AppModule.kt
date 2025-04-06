@@ -4,10 +4,12 @@ import com.insoft.nextstep.data.remote.ApiService
 import com.insoft.nextstep.data.repository.AuthRepositoryImpl
 import com.insoft.nextstep.data.repository.JobRepositoryImp
 import com.insoft.nextstep.data.repository.PostRepositoryImpl
+import com.insoft.nextstep.data.repository.ProjectRepositoryImpl
 import com.insoft.nextstep.data.repository.VideoRepositoryImpl
 import com.insoft.nextstep.domain.repository.AuthRepository
 import com.insoft.nextstep.domain.repository.JobRepository
 import com.insoft.nextstep.domain.repository.PostRepository
+import com.insoft.nextstep.domain.repository.ProjectRepository
 import com.insoft.nextstep.domain.repository.VideoRepository
 import dagger.Module
 import dagger.Provides
@@ -71,4 +73,7 @@ object AppModule {
     fun providePostRepository(apiService: ApiService): PostRepository {
         return PostRepositoryImpl(apiService)
     }
+    @Provides
+    fun provideProjectRepository(api: ApiService): ProjectRepository =
+        ProjectRepositoryImpl(api)
 }

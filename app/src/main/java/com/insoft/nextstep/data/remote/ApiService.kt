@@ -1,5 +1,6 @@
 package com.insoft.nextstep.data.remote
 
+import Project
 import com.insoft.nextstep.data.model.JobModel
 import com.insoft.nextstep.data.model.LoginRequest
 import com.insoft.nextstep.data.model.PostResponse
@@ -55,5 +56,24 @@ interface ApiService {
 
     @GET("posts/all")
     suspend fun getAllPosts(@Header("Authorization") token: String): Response<List<PostResponse>>
+
+    @GET("/projects")
+    suspend fun getProjects(): List<Project>
+
+    @Multipart
+    @POST("projects/create")
+    suspend fun createProject(
+        @Header("Authorization") token: String,
+        @Part image: MultipartBody.Part?,
+        @Part("title") title: RequestBody,
+        @Part("description") description: RequestBody,
+        @Part("tags") tags: RequestBody,
+        @Part("githubLink") githubLink: RequestBody,
+        @Part("liveLink") liveLink: RequestBody,
+        @Part("techStack") techStack: RequestBody,
+        @Part("postedBy[userId]") userId: RequestBody,
+        @Part("postedBy[username]") username: RequestBody,
+        @Part("postedBy[profilePic]") profilePic: RequestBody
+    ): Response<Project>
 
 }

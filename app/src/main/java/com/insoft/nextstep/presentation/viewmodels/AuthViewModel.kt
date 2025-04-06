@@ -36,27 +36,27 @@ class AuthViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     fun login(name: String, email: String, password: String) {
         viewModelScope.launch {
-            _isLoading.value = true  // Show progress bar
-            val response = loginUseCase(LoginRequest(name, email, password))
-            _loginState.value = response
-            _isLoading.value = false  // Show progress bar
-
+            _isLoading.value = true
+            try {
+                val response = loginUseCase(LoginRequest(name, email, password))
+                _loginState.value = response
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Login Failed: ${e.message}")
+                _errorMessage.value = "Login failed: ${e.localizedMessage ?: "Unknown error"}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
-//    fun signup(name: String, email: String, password: String) {
-//        viewModelScope.launch {
-//            _isLoading.value = true  // Show progress bar
-//            val response = signupUseCase(LoginRequest(name, email, password))
-//            _signupState.value = response
-//            _isLoading.value = false  // Show progress bar
-//
-//        }
-//    }
-
+    fun clearError() {
+        _errorMessage.value = null
+    }
     fun signup(name: String, email: String, password: String, profilePicUri: Uri?, context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -72,9 +72,16 @@ class AuthViewModel @Inject constructor(
                 }
 
                 val response = signupUseCase(namePart, emailPart, passwordPart, profilePicPart)
-                _signupState.value = response.body()
+
+                if (response.isSuccessful) {
+                    _signupState.value = response.body()
+                } else {
+                    _errorMessage.value = response.errorBody()?.string() ?: "Signup failed"
+                }
+
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Signup Failed: ${e.message}")
+                _errorMessage.value = "Signup failed: ${e.localizedMessage}"
             } finally {
                 _isLoading.value = false
             }
