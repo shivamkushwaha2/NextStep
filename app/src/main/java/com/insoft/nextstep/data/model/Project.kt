@@ -1,18 +1,6 @@
 import com.insoft.nextstep.data.model.CommentX
 import com.insoft.nextstep.data.model.PostedBy
 
-//data class Project(
-//    val __v: Int,
-//    val _id: String,
-//    val comments: List<CommentX>,
-//    val createdAt: String,
-//    val description: String,
-//    val image: String,
-//    val postedBy: PostedBy,
-//    val tags: List<String>,
-//    val title: String,
-//    val upvotes: List<String>
-//)
 data class Project(
     val id: String,
     val title: String,

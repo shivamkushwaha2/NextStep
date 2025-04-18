@@ -138,7 +138,8 @@ fun SignUpScreen(navController: NavHostController, viewModel: AuthViewModel = hi
                             .align(Alignment.CenterHorizontally)
                             .size(70.dp)
                             .clip(CircleShape)
-                            .border(2.dp, Color.Gray, CircleShape)
+                            .border(2.dp, Color.Gray, CircleShape),
+                        contentScale = ContentScale.Crop
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -295,6 +296,7 @@ fun ErrorText(message: String) {
 }
 
 private fun saveUserData(context: Context, email: String, token: String, name: String, id: String, profilePic: String) {
+    Log.d("SignupScreen", "Saving user data: $email, $token, $name, $id, $profilePic")
     val sharedPreferences = context.getSharedPreferences("NextStepPrefs", Context.MODE_PRIVATE)
     sharedPreferences.edit().apply {
         putString("USER_EMAIL", email)

@@ -126,7 +126,7 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         bottomBar = { BottomNavigationBar(navController) },
-        topBar = { TopBar(scrollBehavior, "Feed", image) },
+        topBar = { TopBar(userId,navController,scrollBehavior, "Feed", image) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("add_post") },
@@ -323,12 +323,12 @@ fun HomeScreen(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
-fun TopBar(scrollBehavior: TopAppBarScrollBehavior, title: String, image: String?) {
+fun TopBar(userId: String, navController: NavHostController, scrollBehavior: TopAppBarScrollBehavior, title: String, image: String?) {
     TopAppBar(scrollBehavior = scrollBehavior,
         navigationIcon = {
             IconButton(
                 onClick = {
-                    /* Handle navigation icon click */
+                    navController.navigate("profile/${userId}")
                 }
 
             ) {
@@ -339,7 +339,7 @@ fun TopBar(scrollBehavior: TopAppBarScrollBehavior, title: String, image: String
                         .size(48.dp) // Adjust size as needed
                         .clip(CircleShape)
                         .border(2.dp, Purple40, CircleShape),
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                 ) {
                     it.load(image)
                         .placeholder(R.drawable.profile)

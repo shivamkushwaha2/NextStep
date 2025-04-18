@@ -342,7 +342,6 @@ fun ClickableSignUpTextComponent(navController: NavHostController?) {
         }
     )
 }
-
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val screens = listOf(
@@ -351,44 +350,99 @@ fun BottomNavigationBar(navController: NavController) {
         Screen.Jobs,
         Screen.Projects,
         Screen.Chat
-
     )
 
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val cornerRadius = 18.dp
 
-    NavigationBar(containerColor = Color.White, modifier = Modifier.padding(0.dp)) {
-        screens.forEach { screen ->
-            val isSelected = screen.route == currentRoute
-            val icon = if (isSelected) screen.selectedIcon else screen.icon
-            NavigationBarItem(
-                icon = {
-                    Image(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(icon!!),
-                        contentDescription = screen.title,
-//                        tint = if (isSelected) Color.Black else Color.Gray
-                    )
-                },
-                label = { Text(screen.title!!) },
-                selected = isSelected,
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    unselectedIconColor = Color.Gray,
-                    selectedTextColor = Color.Black,
-                    unselectedTextColor = Color.Gray,
-//                    indicatorColor = colorResource(R.color.blue_gradient_color)// Purple background when selected
-                ),
-                onClick = {
-                    navController.navigate(screen.route) {
-                        // Ensure the selected screen isn't added multiple times to the backstack
-                        popUpTo(Screen.Home.route) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                }
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Color(0xFFE0E0E0), // Light border color
+                shape = RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
             )
+            .clip(RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius))
+    ) {
+        NavigationBar(containerColor = Color.Transparent) {
+            screens.forEach { screen ->
+                val isSelected = screen.route == currentRoute
+                val icon = if (isSelected) screen.selectedIcon else screen.icon
+                NavigationBarItem(
+                    icon = {
+                        Image(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(icon!!),
+                            contentDescription = screen.title
+                        )
+                    },
+                    label = { Text(screen.title!!) },
+                    selected = isSelected,
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Black,
+                        unselectedIconColor = Color.Gray,
+                        selectedTextColor = Color.Black,
+                        unselectedTextColor = Color.Gray
+                    ),
+                    onClick = {
+                        navController.navigate(screen.route) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
         }
     }
 }
+
+//@Composable
+//fun BottomNavigationBar(navController: NavController) {
+//    val screens = listOf(
+//        Screen.Home,
+//        Screen.Videos,
+//        Screen.Jobs,
+//        Screen.Projects,
+//        Screen.Chat
+//
+//    )
+//
+//    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+//
+//    NavigationBar(containerColor = Color.White, modifier = Modifier.padding(0.dp)) {
+//        screens.forEach { screen ->
+//            val isSelected = screen.route == currentRoute
+//            val icon = if (isSelected) screen.selectedIcon else screen.icon
+//            NavigationBarItem(
+//                icon = {
+//                    Image(
+//                        modifier = Modifier.size(24.dp),
+//                        painter = painterResource(icon!!),
+//                        contentDescription = screen.title,
+////                        tint = if (isSelected) Color.Black else Color.Gray
+//                    )
+//                },
+//                label = { Text(screen.title!!) },
+//                selected = isSelected,
+//                colors = NavigationBarItemDefaults.colors(
+//                    selectedIconColor = Color.Black,
+//                    unselectedIconColor = Color.Gray,
+//                    selectedTextColor = Color.Black,
+//                    unselectedTextColor = Color.Gray,
+////                    indicatorColor = colorResource(R.color.blue_gradient_color)// Purple background when selected
+//                ),
+//                onClick = {
+//                    navController.navigate(screen.route) {
+//                        // Ensure the selected screen isn't added multiple times to the backstack
+//                        popUpTo(Screen.Home.route) { inclusive = false }
+//                        launchSingleTop = true
+//                    }
+//                }
+//            )
+//        }
+//    }
+//}
 
 @Composable
 fun JobItem(job: JobModel, modifier: Modifier) {

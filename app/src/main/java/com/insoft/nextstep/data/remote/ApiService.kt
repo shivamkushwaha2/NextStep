@@ -9,6 +9,7 @@ import com.insoft.nextstep.data.model.SaveVideoRequest
 import com.insoft.nextstep.data.model.UserModel
 import com.insoft.nextstep.data.model.VideoModel
 import com.insoft.nextstep.data.model.VideoResponse
+import com.insoft.nextstep.data.model.userProfileX
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -17,8 +18,9 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
-import retrofit2.http.Query
+import retrofit2.http.Path
 
 interface ApiService {
     @GET("api/jobs")
@@ -75,5 +77,23 @@ interface ApiService {
         @Part("postedBy[username]") username: RequestBody,
         @Part("postedBy[profilePic]") profilePic: RequestBody
     ): Response<Project>
+
+
+    @GET("user/{userId}")
+    suspend fun getProfile(@Path("userId") userId: String): userProfileX
+
+    @Multipart
+    @PUT("user/update-profile")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Part("userId") userId: RequestBody,
+        @Part("firstName") firstName: RequestBody,
+        @Part("lastName") lastName: RequestBody,
+        @Part("bio") bio: RequestBody,
+        @Part("tags") tags: RequestBody,
+        @Part("githubUsername") githubUsername: RequestBody,
+        @Part profilePic: MultipartBody.Part?,
+        @Part resume: MultipartBody.Part?
+    ): userProfileX
 
 }

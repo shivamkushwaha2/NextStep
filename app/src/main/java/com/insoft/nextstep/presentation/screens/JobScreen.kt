@@ -31,6 +31,8 @@ fun JobScreen(navController: NavHostController, modifier: Modifier = Modifier,  
     val jobs by viewModel.jobs.collectAsState(emptyList())
     val sharedPreferences = navController.context.getSharedPreferences("NextStepPrefs", 0)
     val image = sharedPreferences.getString("USER_IMAGE", "")
+    val userId = sharedPreferences.getString("USER_ID", "") ?: ""
+
     val scrollBehavior =
         TopAppBarDefaults.enterAlwaysScrollBehavior(state = rememberTopAppBarState())
     Scaffold(modifier
@@ -40,7 +42,7 @@ fun JobScreen(navController: NavHostController, modifier: Modifier = Modifier,  
             BottomNavigationBar(navController)
         },
         topBar = {
-            TopBar(scrollBehavior, "Jobs", image)
+            TopBar(userId,navController,scrollBehavior, "Jobs", image)
         }) { paddingValues ->
         LazyColumn(
             modifier = Modifier

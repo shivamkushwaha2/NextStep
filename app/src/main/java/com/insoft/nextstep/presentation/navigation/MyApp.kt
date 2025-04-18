@@ -12,12 +12,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.insoft.nextstep.presentation.screens.AddPostScreen
 import com.insoft.nextstep.presentation.screens.CreateProjectScreen
+import com.insoft.nextstep.presentation.screens.EditProfileScreen
 import com.insoft.nextstep.presentation.screens.IntroScreen1
 import com.insoft.nextstep.presentation.screens.IntroScreen2
 import com.insoft.nextstep.presentation.screens.IntroScreen3
@@ -25,6 +28,7 @@ import com.insoft.nextstep.presentation.screens.LoginScreen
 import com.insoft.nextstep.presentation.screens.SignUpScreen
 import com.insoft.nextstep.presentation.screens.HomeScreen
 import com.insoft.nextstep.presentation.screens.JobScreen
+import com.insoft.nextstep.presentation.screens.ProfileScreen
 import com.insoft.nextstep.presentation.screens.ProjectsScreen
 import com.insoft.nextstep.presentation.screens.UploadVideo
 import com.insoft.nextstep.presentation.screens.VideoScreen
@@ -138,6 +142,16 @@ fun MyApp(modifier: Modifier = Modifier) {
             }
             composable("add_post") { AddPostScreen(navController) }
             composable("create_project") { CreateProjectScreen(navController) }
+//            composable("profile") { ProfileScreen(navController,id) }
+            composable("edit_profile") { EditProfileScreen(navController) }
+            composable(
+                route = "profile/{userId}",
+                arguments = listOf(navArgument("userId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId")
+                ProfileScreen(navController = navController, userId = userId)
+            }
+
         }
     }
 }
