@@ -1,8 +1,11 @@
 package com.insoft.nextstep.data.remote
 
 import Project
+import com.insoft.nextstep.data.model.Chat
+import com.insoft.nextstep.data.model.ChatUser
 import com.insoft.nextstep.data.model.JobModel
 import com.insoft.nextstep.data.model.LoginRequest
+import com.insoft.nextstep.data.model.Message
 import com.insoft.nextstep.data.model.PostResponse
 import com.insoft.nextstep.data.model.PresignedUrlResponse
 import com.insoft.nextstep.data.model.SaveVideoRequest
@@ -95,5 +98,42 @@ interface ApiService {
         @Part profilePic: MultipartBody.Part?,
         @Part resume: MultipartBody.Part?
     ): userProfileX
+
+
+
+    @GET("chats")
+    suspend fun getMyChats(
+        @Header("Authorization") token: String
+    ): List<Chat>
+
+    @POST("chats/{targetUserId}")
+    suspend fun startChat(
+        @Path("targetUserId") targetUserId: String,
+        @Header("Authorization") token: String
+    ): Chat
+
+    @GET("messages/{chatId}")
+    suspend fun getMessages(
+        @Path("chatId") chatId: String,
+        @Header("Authorization") token: String
+    ): List<Message>
+
+    @POST("messages")
+    suspend fun sendMessage(
+        @Header("Authorization") token: String,
+        @Body message: Map<String, String> // { chat, text }
+    ): Message
+
+
+    @POST("user/{targetUserId}/connect")
+    suspend fun connectUser(
+        @Path("targetUserId") targetUserId: String,
+        @Header("Authorization") token: String
+    ): String
+
+    @GET("user/connections")
+    suspend fun getMyConnections(
+        @Header("Authorization") token: String
+    ): List<ChatUser>
 
 }

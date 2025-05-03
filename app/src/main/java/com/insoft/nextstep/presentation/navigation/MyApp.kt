@@ -141,9 +141,11 @@ fun MyApp(modifier: Modifier = Modifier) {
                 UploadVideo(navController = navController)
             }
             composable("add_post") { AddPostScreen(navController) }
+
             composable("create_project") { CreateProjectScreen(navController) }
-//            composable("profile") { ProfileScreen(navController,id) }
+
             composable("edit_profile") { EditProfileScreen(navController) }
+
             composable(
                 route = "profile/{userId}",
                 arguments = listOf(navArgument("userId") { type = NavType.StringType })
@@ -152,6 +154,29 @@ fun MyApp(modifier: Modifier = Modifier) {
                 ProfileScreen(navController = navController, userId = userId)
             }
 
+            composable("chat/{connectionUserId}/{connectionUserName}") { backStackEntry ->
+                val connectionUserId = backStackEntry.arguments?.getString("connectionUserId")
+                val connectionUserName = backStackEntry.arguments?.getString("connectionUserName")
+                if (connectionUserId != null && connectionUserName != null) {
+                    com.insoft.nextstep.presentation.screens.ChatScreen(
+                        connectionUserId = connectionUserId,
+                        connectionUserName = connectionUserName,
+                        currentUserId = id.toString()
+                    )
+                }
+            }
+
+            composable("chatList"){
+                com.insoft.nextstep.presentation.screens.ChatsListScreen(
+                    navController = navController,
+                    currentUserId = id.toString()
+                )
+            }
+            composable("new_message_screen") {
+                com.insoft.nextstep.presentation.screens.NewMessageScreen(
+                    navController = navController
+                )
+            }
         }
     }
 }
